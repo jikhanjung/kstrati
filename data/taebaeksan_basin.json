@@ -1,0 +1,447 @@
+{
+  "basin": "Taebaeksan Basin",
+  "description": "Lithostratigraphic and biostratigraphic correlation between the Taebaek and Yeongwol groups",
+
+  "groups": [
+    {
+      "name": "Taebaek Group",
+      "name_ko": "태백층군",
+      "faunal_province": "Hwangho",
+      "facies": "shallow marine",
+      "formations": [
+        {
+          "name": "Duwibong",
+          "name_ko": "두위봉",
+          "prev": "Jigunsan",
+          "next": null,
+          "age": { "series": "Middle Ordovician", "stage": "Darriwilian" }
+        },
+        {
+          "name": "Jigunsan",
+          "name_ko": "직운산",
+          "prev": "Makgol",
+          "next": "Duwibong",
+          "age": { "series": "Middle Ordovician", "stage": "Darriwilian" }
+        },
+        {
+          "name": "Makgol",
+          "name_ko": "막골",
+          "prev": "Dumugol",
+          "next": "Jigunsan",
+          "age": { "series": "Lower Ordovician", "stage_original": "Arenigian", "stage_ics": ["Floian", "Dapingian"] }
+        },
+        {
+          "name": "Dumugol",
+          "name_ko": "두무골",
+          "prev": "Dongjeom",
+          "next": "Makgol",
+          "age": { "series": "Lower Ordovician", "stage": ["Tremadocian", "Floian"], "stage_original": ["Tremadocian", "Arenigian"] }
+        },
+        {
+          "name": "Dongjeom",
+          "name_ko": "동점",
+          "prev": "Hwajeol",
+          "next": "Dumugol",
+          "age": { "series": "Lower Ordovician", "stage": "Tremadocian" }
+        },
+        {
+          "name": "Hwajeol",
+          "name_ko": "화절",
+          "prev": "Sesong",
+          "next": "Dongjeom",
+          "age": { "series": "Furongian", "stage": "Stage 10" }
+        },
+        {
+          "name": "Sesong",
+          "name_ko": "세송",
+          "prev": "Daegi",
+          "next": "Hwajeol",
+          "age": { "series": "Furongian", "stage": ["Jiangshanian", "Paibian"] }
+        },
+        {
+          "name": "Daegi",
+          "name_ko": "대기",
+          "prev": "Myobong",
+          "next": "Sesong",
+          "age": { "series_original": "Cambrian Series 3", "series_ics": "Miaolingian", "stage": ["Guzhangian", "Drumian"] }
+        },
+        {
+          "name": "Myobong",
+          "name_ko": "묘봉",
+          "prev": "Jangsan",
+          "next": "Daegi",
+          "age": { "series_original": "Cambrian Series 3", "series_ics": "Miaolingian", "stage": "Wuliuan" }
+        },
+        {
+          "name": "Jangsan",
+          "name_ko": "장산",
+          "alt_name": "Myeonsan",
+          "alt_name_ko": "묘산",
+          "prev": null,
+          "next": "Myobong",
+          "age": { "series_original": "Cambrian Series 2", "series_ics": "Cambrian Series 2", "stage": ["Stage 4", "Stage 3"] }
+        }
+      ]
+    },
+    {
+      "name": "Yeongwol Group",
+      "name_ko": "영월층군",
+      "faunal_province": "Jiangnan",
+      "facies": "deep-water",
+      "formations": [
+        {
+          "name": "Yeongheung",
+          "name_ko": "영흥",
+          "prev": "Mungok",
+          "next": null,
+          "age": { "series": ["Middle Ordovician", "Lower Ordovician"], "stage": ["Dapingian", "Floian", "Tremadocian"], "stage_original": ["Arenigian", "Tremadocian"] }
+        },
+        {
+          "name": "Mungok",
+          "name_ko": "문곡",
+          "prev": "Wagok",
+          "next": "Yeongheung",
+          "age": { "series": "Lower Ordovician", "stage": "Tremadocian" }
+        },
+        {
+          "name": "Wagok",
+          "name_ko": "와곡",
+          "prev": "Machari",
+          "next": "Mungok",
+          "age": { "series": "Furongian", "stage": "Stage 10" }
+        },
+        {
+          "name": "Machari",
+          "name_ko": "마차리",
+          "prev": "Sambangsan",
+          "next": "Wagok",
+          "age": { "series": ["Furongian", "Miaolingian"], "stage": ["Jiangshanian", "Paibian", "Guzhangian"] }
+        },
+        {
+          "name": "Sambangsan",
+          "name_ko": "삼방산",
+          "prev": null,
+          "next": "Machari",
+          "age": { "series_original": "Cambrian Series 3", "series_ics": "Miaolingian", "stage": ["Drumian", "Wuliuan"] }
+        }
+      ]
+    }
+  ],
+
+  "biozones": [
+    {
+      "name": "Dolerobasilicus",
+      "prev": null,
+      "next": null,
+      "occurrences": [
+        { "group": "Taebaek Group", "formation": "Jigunsan" }
+      ]
+    },
+    {
+      "name": "Kayseraspis",
+      "prev": "Protopliomerops",
+      "next": "Dolerobasilicus",
+      "occurrences": [
+        { "group": "Taebaek Group", "formation": "Dumugol" },
+        { "group": "Yeongwol Group", "formation": "Yeongheung" }
+      ],
+      "note": "Cross-group correlation marker between Dumugol and Yeongheung formations"
+    },
+    {
+      "name": "Shumardia pellizzarii",
+      "prev": "Kainella euryrachis",
+      "next": "Kayseraspis",
+      "occurrences": [
+        { "group": "Yeongwol Group", "formation": "Mungok" }
+      ]
+    },
+    {
+      "name": "Protopliomerops",
+      "prev": "Asaphellus",
+      "next": "Kayseraspis",
+      "occurrences": [
+        { "group": "Taebaek Group", "formation": "Dumugol" }
+      ]
+    },
+    {
+      "name": "Kainella euryrachis",
+      "prev": "Yosimurasapis vulgaris",
+      "next": "Shumardia pellizzarii",
+      "occurrences": [
+        { "group": "Yeongwol Group", "formation": "Mungok" }
+      ]
+    },
+    {
+      "name": "Asaphellus",
+      "prev": "Richardsonella",
+      "next": "Protopliomerops",
+      "occurrences": [
+        { "group": "Taebaek Group", "formation": "Dumugol" }
+      ]
+    },
+    {
+      "name": "Yosimurasapis vulgaris",
+      "prev": "Fatocephalus hunjiangensis",
+      "next": "Kainella euryrachis",
+      "occurrences": [
+        { "group": "Yeongwol Group", "formation": "Mungok" }
+      ]
+    },
+    {
+      "name": "Richardsonella",
+      "prev": "Pseudokoldinioidia",
+      "next": "Asaphellus",
+      "occurrences": [
+        { "group": "Taebaek Group", "formation": "Dongjeom" }
+      ]
+    },
+    {
+      "name": "Pseudokoldinioidia",
+      "prev": "Eosaukia",
+      "next": "Richardsonella",
+      "occurrences": [
+        { "group": "Taebaek Group", "formation": "Dongjeom" }
+      ]
+    },
+    {
+      "name": "Fatocephalus hunjiangensis",
+      "prev": "Pseudoyuepingia asaphoides",
+      "next": "Yosimurasapis vulgaris",
+      "occurrences": [
+        { "group": "Yeongwol Group", "formation": "Wagok" }
+      ]
+    },
+    {
+      "name": "Eosaukia",
+      "prev": "Quadraticephalus",
+      "next": "Pseudokoldinioidia",
+      "occurrences": [
+        { "group": "Taebaek Group", "formation": "Hwajeol" }
+      ]
+    },
+    {
+      "name": "Quadraticephalus",
+      "prev": "Asioptychaspis",
+      "next": "Eosaukia",
+      "occurrences": [
+        { "group": "Taebaek Group", "formation": "Hwajeol" }
+      ]
+    },
+    {
+      "name": "Asioptychaspis",
+      "prev": "Kaolishania",
+      "next": "Quadraticephalus",
+      "occurrences": [
+        { "group": "Taebaek Group", "formation": "Hwajeol" }
+      ]
+    },
+    {
+      "name": "Pseudoyuepingia asaphoides",
+      "prev": "Agnostotes orientalis",
+      "next": "Fatocephalus hunjiangensis",
+      "occurrences": [
+        { "group": "Yeongwol Group", "formation": "Machari" }
+      ]
+    },
+    {
+      "name": "Kaolishania",
+      "prev": "Chuangia",
+      "next": "Asioptychaspis",
+      "occurrences": [
+        { "group": "Taebaek Group", "formation": "Sesong" }
+      ]
+    },
+    {
+      "name": "Agnostotes orientalis",
+      "prev": "Eochuangia hana",
+      "next": "Pseudoyuepingia asaphoides",
+      "occurrences": [
+        { "group": "Yeongwol Group", "formation": "Machari" }
+      ]
+    },
+    {
+      "name": "Chuangia",
+      "prev": "Prochuangia",
+      "next": "Kaolishania",
+      "occurrences": [
+        { "group": "Taebaek Group", "formation": "Sesong" }
+      ]
+    },
+    {
+      "name": "Eochuangia hana",
+      "prev": "Eugonocare longifrons",
+      "next": "Agnostotes orientalis",
+      "occurrences": [
+        { "group": "Yeongwol Group", "formation": "Machari" }
+      ]
+    },
+    {
+      "name": "Prochuangia",
+      "prev": "Fenghuangella",
+      "next": "Chuangia",
+      "occurrences": [
+        { "group": "Taebaek Group", "formation": "Sesong" }
+      ]
+    },
+    {
+      "name": "Eugonocare longifrons",
+      "prev": "Hancrania brevilimbata",
+      "next": "Eochuangia hana",
+      "occurrences": [
+        { "group": "Yeongwol Group", "formation": "Machari" }
+      ]
+    },
+    {
+      "name": "Fenghuangella",
+      "prev": "Liostracina",
+      "next": "Prochuangia",
+      "occurrences": [
+        { "group": "Taebaek Group", "formation": "Sesong" }
+      ]
+    },
+    {
+      "name": "Hancrania brevilimbata",
+      "prev": "Proceratopyge tenuis",
+      "next": "Eugonocare longifrons",
+      "occurrences": [
+        { "group": "Yeongwol Group", "formation": "Machari" }
+      ]
+    },
+    {
+      "name": "Liostracina",
+      "prev": "Neodrepanura",
+      "next": "Fenghuangella",
+      "occurrences": [
+        { "group": "Taebaek Group", "formation": "Sesong" }
+      ]
+    },
+    {
+      "name": "Proceratopyge tenuis",
+      "prev": "Glyptagnostus reticulatus",
+      "next": "Hancrania brevilimbata",
+      "occurrences": [
+        { "group": "Yeongwol Group", "formation": "Machari" }
+      ]
+    },
+    {
+      "name": "Neodrepanura",
+      "prev": "Stephanocare",
+      "next": "Liostracina",
+      "occurrences": [
+        { "group": "Taebaek Group", "formation": "Sesong" }
+      ]
+    },
+    {
+      "name": "Glyptagnostus reticulatus",
+      "prev": "Glyptagnostus stolidotus",
+      "next": "Proceratopyge tenuis",
+      "occurrences": [
+        { "group": "Yeongwol Group", "formation": "Machari" }
+      ]
+    },
+    {
+      "name": "Stephanocare",
+      "prev": "Jiulongshania",
+      "next": "Neodrepanura",
+      "occurrences": [
+        { "group": "Taebaek Group", "formation": "Sesong" }
+      ]
+    },
+    {
+      "name": "Glyptagnostus stolidotus",
+      "prev": "Lejopyge armata",
+      "next": "Glyptagnostus reticulatus",
+      "occurrences": [
+        { "group": "Yeongwol Group", "formation": "Machari" }
+      ]
+    },
+    {
+      "name": "Jiulongshania",
+      "prev": "Amphoton",
+      "next": "Stephanocare",
+      "occurrences": [
+        { "group": "Taebaek Group", "formation": "Daegi" }
+      ]
+    },
+    {
+      "name": "Lejopyge armata",
+      "prev": "Tonkinella",
+      "next": "Glyptagnostus stolidotus",
+      "occurrences": [
+        { "group": "Yeongwol Group", "formation": "Machari" }
+      ]
+    },
+    {
+      "name": "Amphoton",
+      "prev": "Crepicephalina",
+      "next": "Jiulongshania",
+      "occurrences": [
+        { "group": "Taebaek Group", "formation": "Daegi" }
+      ]
+    },
+    {
+      "name": "Tonkinella",
+      "prev": "Megagraulos semicircularis",
+      "next": "Lejopyge armata",
+      "occurrences": [
+        { "group": "Yeongwol Group", "formation": "Machari" }
+      ]
+    },
+    {
+      "name": "Crepicephalina",
+      "prev": "Bailiella",
+      "next": "Amphoton",
+      "occurrences": [
+        { "group": "Taebaek Group", "formation": "Daegi" }
+      ]
+    },
+    {
+      "name": "Megagraulos semicircularis",
+      "prev": "Metagraulos sampoensis",
+      "next": "Tonkinella",
+      "occurrences": [
+        { "group": "Yeongwol Group", "formation": "Sambangsan" }
+      ]
+    },
+    {
+      "name": "Bailiella",
+      "prev": "Mapania",
+      "next": "Crepicephalina",
+      "occurrences": [
+        { "group": "Taebaek Group", "formation": "Myobong" }
+      ]
+    },
+    {
+      "name": "Metagraulos sampoensis",
+      "prev": null,
+      "next": "Megagraulos semicircularis",
+      "occurrences": [
+        { "group": "Yeongwol Group", "formation": "Sambangsan" }
+      ]
+    },
+    {
+      "name": "Mapania",
+      "prev": "Elrathia",
+      "next": "Bailiella",
+      "occurrences": [
+        { "group": "Taebaek Group", "formation": "Myobong" }
+      ]
+    },
+    {
+      "name": "Elrathia",
+      "prev": "Redlichia",
+      "next": "Mapania",
+      "occurrences": [
+        { "group": "Taebaek Group", "formation": "Myobong" }
+      ]
+    },
+    {
+      "name": "Redlichia",
+      "prev": null,
+      "next": "Elrathia",
+      "occurrences": [
+        { "group": "Taebaek Group", "formation": "Myobong" }
+      ]
+    }
+  ]
+}
