@@ -88,9 +88,10 @@ def populate_artifact_metadata(conn):
 def populate_provenance(conn):
     sources = [
         (1, "primary",
-         "Choi, D.K. (2019) Trilobite Biostratigraphy of the Taebaeksan Basin, Korea. Springer.",
-         "Primary reference for litho- and biostratigraphic correlation of Taebaek and Yeongwol groups",
-         2019, None),
+         "Choi, D.K. (2011) A new view on the early Paleozoic paleogeography and paleoenvironments of the Taebaeksan Basin, Korea. "
+         "Journal of the Paleontological Society of Korea, 27(1), 1–11.",
+         "태백산분지의 전기 고생대 고지리, 고환경에 관한 새로운 견해 — primary reference for litho- and biostratigraphic correlation of Taebaek and Yeongwol groups",
+         2011, None),
         (2, "reference",
          "International Commission on Stratigraphy. International Chronostratigraphic Chart v2024/12.",
          "ICS chronostratigraphic standard for age assignments",
@@ -133,6 +134,8 @@ def populate_schema_descriptions(conn):
         ("biozone_occurrences", "id", "Primary key"),
         ("biozone_occurrences", "biozone_id", "FK to biozones.id"),
         ("biozone_occurrences", "formation_id", "FK to strat_units.id (must be a formation)"),
+        ("biozone_occurrences", "provenance_id", "FK to provenance.id — source of this occurrence record"),
+        ("biozone_occurrences", "basis", "How the occurrence was established: 'stated' (explicitly described in source), 'chart_inferred' (read from correlation chart), 'composite' (synthesized from multiple sources)"),
         # -- age_assignments --
         ("age_assignments", None, "ICS chronostratigraphic age assignments for formations and biozones"),
         ("age_assignments", "id", "Primary key"),
@@ -142,6 +145,8 @@ def populate_schema_descriptions(conn):
         ("age_assignments", "ics_stage", "ICS stage name, e.g. 'Tremadocian', 'Paibian', 'Wuliuan'"),
         ("age_assignments", "stage_original", "Original publication term if different from ICS, e.g. 'Arenigian'"),
         ("age_assignments", "age_relation", "Relationship: 'within', 'spans', 'base', 'top'"),
+        ("age_assignments", "provenance_id", "FK to provenance.id — source of this age assignment"),
+        ("age_assignments", "basis", "How the assignment was established: 'stated' (explicitly described), 'chart_inferred' (read from correlation chart), 'gssp_definition' (follows from GSSP boundary), 'composite' (synthesized from multiple sources)"),
     ]
     for table_name, column_name, desc in descs:
         conn.execute(

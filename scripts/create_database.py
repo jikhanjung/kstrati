@@ -40,10 +40,21 @@ def create_tables(conn: sqlite3.Connection):
             FOREIGN KEY (next_id) REFERENCES biozones(id)
         );
 
+        CREATE TABLE IF NOT EXISTS provenance (
+            id          INTEGER PRIMARY KEY,
+            source_type TEXT NOT NULL,
+            citation    TEXT NOT NULL,
+            description TEXT,
+            year        INTEGER,
+            url         TEXT
+        );
+
         CREATE TABLE IF NOT EXISTS biozone_occurrences (
             id            INTEGER PRIMARY KEY,
             biozone_id    INTEGER NOT NULL,
             formation_id  INTEGER NOT NULL,
+            provenance_id INTEGER REFERENCES provenance(id),
+            basis         TEXT NOT NULL DEFAULT 'stated',
             FOREIGN KEY (biozone_id)   REFERENCES biozones(id),
             FOREIGN KEY (formation_id) REFERENCES strat_units(id)
         );
@@ -55,7 +66,9 @@ def create_tables(conn: sqlite3.Connection):
             ics_series     TEXT,
             ics_stage      TEXT,
             stage_original TEXT,
-            age_relation   TEXT DEFAULT 'within'
+            age_relation   TEXT DEFAULT 'within',
+            provenance_id  INTEGER REFERENCES provenance(id),
+            basis          TEXT NOT NULL DEFAULT 'chart_inferred'
         );
     """)
 
@@ -67,6 +80,19 @@ def normalize_list(val):
     if isinstance(val, list):
         return val
     return [val]
+
+
+def seed_provenance(conn: sqlite3.Connection):
+    """Insert the primary provenance record so FK references work."""
+    conn.execute(
+        "INSERT OR IGNORE INTO provenance (id, source_type, citation, description, year) VALUES (?,?,?,?,?)",
+        (1, "primary",
+         "Choi, D.K. (2011) A new view on the early Paleozoic paleogeography and paleoenvironments of the Taebaeksan Basin, Korea. "
+         "Journal of the Paleontological Society of Korea, 27(1), 1–11.",
+         "태백산분지의 전기 고생대 고지리, 고환경에 관한 새로운 견해",
+         2011),
+    )
+    conn.commit()
 
 
 def load_data(conn: sqlite3.Connection, source: dict):
@@ -131,7 +157,7 @@ def load_data(conn: sqlite3.Connection, source: dict):
         for occ in bz["occurrences"]:
             fm_id = unit_ids[occ["formation"]]
             cur.execute(
-                "INSERT INTO biozone_occurrences (biozone_id, formation_id) VALUES (?,?)",
+                "INSERT INTO biozone_occurrences (biozone_id, formation_id, provenance_id, basis) VALUES (?,?,1,'stated')",
                 (bz_id, fm_id),
             )
 
@@ -159,13 +185,13 @@ def load_data(conn: sqlite3.Connection, source: dict):
                     if series_original and not age.get("series"):
                         series = age.get("series_ics") if isinstance(age.get("series_ics"), str) else series
                     cur.execute(
-                        "INSERT INTO age_assignments (entity_type, entity_id, ics_series, ics_stage, stage_original) VALUES (?,?,?,?,?)",
+                        "INSERT INTO age_assignments (entity_type, entity_id, ics_series, ics_stage, stage_original, provenance_id, basis) VALUES (?,?,?,?,?,1,'chart_inferred')",
                         ("formation", fm_id, series, stage, original),
                     )
             elif series_list:
                 for series in series_list:
                     cur.execute(
-                        "INSERT INTO age_assignments (entity_type, entity_id, ics_series) VALUES (?,?,?)",
+                        "INSERT INTO age_assignments (entity_type, entity_id, ics_series, provenance_id, basis) VALUES (?,?,?,1,'chart_inferred')",
                         ("formation", fm_id, series),
                     )
 
@@ -224,6 +250,7 @@ def main():
     conn.execute("PRAGMA foreign_keys=ON")
 
     create_tables(conn)
+    seed_provenance(conn)
     load_data(conn, source)
     print_summary(conn)
 
