@@ -10,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DB_PATH = ROOT / "kstrati.db"
 
-ASSERTION_VERSION = "0.1.1"
+ASSERTION_VERSION = "0.1.2"
 
 NOW = datetime.now(timezone.utc).isoformat()
 TODAY = str(date.today())
@@ -363,10 +363,10 @@ QUERIES = [
             HAVING COUNT(DISTINCT g.id) > 1
         """,
     },
-    # -- Correlation chart --
+    # -- Correlation chart (Joseon) --
     {
         "name": "correlation_chart",
-        "description": "Pre-computed correlation chart rows with rowspan values",
+        "description": "Pre-computed correlation chart rows with rowspan values (Joseon Supergroup)",
         "sql": """
             SELECT row_num,
                    period, period_rowspan,
@@ -374,7 +374,34 @@ QUERIES = [
                    taebaek_fm, taebaek_fm_rowspan, taebaek_bz,
                    yeongwol_fm, yeongwol_fm_rowspan, yeongwol_bz
             FROM correlation_chart
-            WHERE COALESCE(:provenance_id, 1) > 0
+            WHERE provenance_id = COALESCE(:provenance_id, 1)
+            ORDER BY row_num
+        """,
+    },
+    # -- Correlation chart (Pyeongan) --
+    {
+        "name": "pyeongan_correlation_chart",
+        "description": "Stage-based correlation chart for the Pyeongan Supergroup across 13 coalfields",
+        "sql": """
+            SELECT row_num,
+                   period, period_rowspan,
+                   epoch, epoch_rowspan,
+                   stage, stage_rowspan,
+                   samcheok_fm, samcheok_fm_rowspan,
+                   gangreung_fm, gangreung_fm_rowspan,
+                   jeongseon_fm, jeongseon_fm_rowspan,
+                   yeongweol_fm, yeongweol_fm_rowspan,
+                   jecheon_fm, jecheon_fm_rowspan,
+                   danyang_fm, danyang_fm_rowspan,
+                   mungyeong_fm, mungyeong_fm_rowspan,
+                   boeun_fm, boeun_fm_rowspan,
+                   western_boeun_fm, western_boeun_fm_rowspan,
+                   wanju_geumsan_fm, wanju_geumsan_fm_rowspan,
+                   hwasun_fm, hwasun_fm_rowspan,
+                   boseong_fm, boseong_fm_rowspan,
+                   haenam_gangjin_fm, haenam_gangjin_fm_rowspan
+            FROM pyeongan_correlation
+            WHERE COALESCE(:provenance_id, 2) > 0
             ORDER BY row_num
         """,
     },
@@ -444,28 +471,75 @@ MANIFEST = {
                 },
             },
         },
-        # ── Correlation chart ──
+        # ── Correlation chart (provenance-variant) ──
         "correlation_chart": {
             "type": "hierarchy",
             "display": "correlation",
             "title": "Correlation Chart",
-            "description": "Lithostratigraphic and biostratigraphic correlation between Taebaek and Yeongwol groups",
-            "source_query": "correlation_chart",
+            "description": "Chronostratigraphic–lithostratigraphic correlation",
             "icon": "bi-layout-three-columns",
-            "correlation_display": {
-                "column_groups": [
-                    {"label": "AGE", "colspan": 2},
-                    {"label": "Taebaek Group", "colspan": 2},
-                    {"label": "Yeongwol Group", "colspan": 2},
-                ],
-                "columns": [
-                    {"key": "period", "label": "", "rowspan_key": "period_rowspan", "css_class": "corr-period"},
-                    {"key": "stage", "label": "Stage", "rowspan_key": "stage_rowspan", "css_class": "corr-stage"},
-                    {"key": "taebaek_fm", "label": "Formation", "rowspan_key": "taebaek_fm_rowspan", "css_class": "corr-fm"},
-                    {"key": "taebaek_bz", "label": "Biozone", "css_class": "corr-bz", "italic": True, "border_follow": "taebaek_fm_rowspan", "border_bottom_values": ["Fenghuangella"]},
-                    {"key": "yeongwol_fm", "label": "Formation", "rowspan_key": "yeongwol_fm_rowspan", "css_class": "corr-fm"},
-                    {"key": "yeongwol_bz", "label": "Biozone", "css_class": "corr-bz", "italic": True, "border_follow": "yeongwol_fm_rowspan", "border_bottom_values": ["Glyptagnostus reticulatus"]},
-                ],
+            "variant_key": "provenance_id",
+            "default_variant": "1",
+            "variants": {
+                "1": {
+                    "description": "Joseon Supergroup — Taebaek and Yeongwol groups (Cambrian–Ordovician)",
+                    "source_query": "correlation_chart",
+                    "correlation_display": {
+                        "column_groups": [
+                            {"label": "AGE", "colspan": 2},
+                            {"label": "Taebaek Group (태백층군)", "colspan": 2},
+                            {"label": "Yeongwol Group (영월층군)", "colspan": 2},
+                        ],
+                        "columns": [
+                            {"key": "period", "label": "", "rowspan_key": "period_rowspan", "css_class": "corr-period"},
+                            {"key": "stage", "label": "Stage", "rowspan_key": "stage_rowspan", "css_class": "corr-stage"},
+                            {"key": "taebaek_fm", "label": "Formation", "rowspan_key": "taebaek_fm_rowspan", "css_class": "corr-fm"},
+                            {"key": "taebaek_bz", "label": "Biozone", "css_class": "corr-bz", "italic": True, "border_follow": "taebaek_fm_rowspan", "border_bottom_values": ["Fenghuangella"]},
+                            {"key": "yeongwol_fm", "label": "Formation", "rowspan_key": "yeongwol_fm_rowspan", "css_class": "corr-fm"},
+                            {"key": "yeongwol_bz", "label": "Biozone", "css_class": "corr-bz", "italic": True, "border_follow": "yeongwol_fm_rowspan", "border_bottom_values": ["Glyptagnostus reticulatus"]},
+                        ],
+                    },
+                },
+                "2": {
+                    "description": "Pyeongan Supergroup — coalfield correlation (Carboniferous–Triassic)",
+                    "source_query": "pyeongan_correlation_chart",
+                    "correlation_display": {
+                        "column_groups": [
+                            {"label": "AGE", "colspan": 3},
+                            {"label": "삼척", "colspan": 1},
+                            {"label": "강릉", "colspan": 1},
+                            {"label": "정선-평창", "colspan": 1},
+                            {"label": "영월", "colspan": 1},
+                            {"label": "제천", "colspan": 1},
+                            {"label": "단양", "colspan": 1},
+                            {"label": "문경", "colspan": 1},
+                            {"label": "보은", "colspan": 1},
+                            {"label": "보은서부", "colspan": 1},
+                            {"label": "완주-금산", "colspan": 1},
+                            {"label": "화순", "colspan": 1},
+                            {"label": "보성", "colspan": 1},
+                            {"label": "해남-강진", "colspan": 1},
+                        ],
+                        "columns": [
+                            {"key": "period", "label": "", "rowspan_key": "period_rowspan", "css_class": "corr-period"},
+                            {"key": "epoch", "label": "Epoch", "rowspan_key": "epoch_rowspan", "css_class": "corr-stage"},
+                            {"key": "stage", "label": "Stage", "rowspan_key": "stage_rowspan", "css_class": "corr-stage"},
+                            {"key": "samcheok_fm", "label": "Formation", "rowspan_key": "samcheok_fm_rowspan", "css_class": "corr-fm"},
+                            {"key": "gangreung_fm", "label": "Formation", "rowspan_key": "gangreung_fm_rowspan", "css_class": "corr-fm"},
+                            {"key": "jeongseon_fm", "label": "Formation", "rowspan_key": "jeongseon_fm_rowspan", "css_class": "corr-fm"},
+                            {"key": "yeongweol_fm", "label": "Formation", "rowspan_key": "yeongweol_fm_rowspan", "css_class": "corr-fm"},
+                            {"key": "jecheon_fm", "label": "Formation", "rowspan_key": "jecheon_fm_rowspan", "css_class": "corr-fm"},
+                            {"key": "danyang_fm", "label": "Formation", "rowspan_key": "danyang_fm_rowspan", "css_class": "corr-fm"},
+                            {"key": "mungyeong_fm", "label": "Formation", "rowspan_key": "mungyeong_fm_rowspan", "css_class": "corr-fm"},
+                            {"key": "boeun_fm", "label": "Formation", "rowspan_key": "boeun_fm_rowspan", "css_class": "corr-fm"},
+                            {"key": "western_boeun_fm", "label": "Formation", "rowspan_key": "western_boeun_fm_rowspan", "css_class": "corr-fm"},
+                            {"key": "wanju_geumsan_fm", "label": "Formation", "rowspan_key": "wanju_geumsan_fm_rowspan", "css_class": "corr-fm"},
+                            {"key": "hwasun_fm", "label": "Formation", "rowspan_key": "hwasun_fm_rowspan", "css_class": "corr-fm"},
+                            {"key": "boseong_fm", "label": "Formation", "rowspan_key": "boseong_fm_rowspan", "css_class": "corr-fm"},
+                            {"key": "haenam_gangjin_fm", "label": "Formation", "rowspan_key": "haenam_gangjin_fm_rowspan", "css_class": "corr-fm"},
+                        ],
+                    },
+                },
             },
         },
         # ── Formations table ──

@@ -1,0 +1,618 @@
+{
+  "basin": "Korean Peninsula (Southern)",
+  "description": "Correlation of the Pyeongan Supergroup distributed in the southern Korean Peninsula",
+  "source": "Kim, M.G., and Lee, Y.I., 2017, The stratigraphy and correlation of the upper Paleozoic Pyeongan Supergroup of southern Korean Peninsula - A review: Journal of the Geological Society of Korea, v. 53, p. 321–338.",
+
+  "supergroup": {
+    "name": "Pyeongan Supergroup",
+    "name_ko": "평안누층군"
+  },
+
+  "coalfields": [
+    {
+      "name": "Samcheok coalfield",
+      "name_ko": "삼척탄전",
+      "role": "reference",
+      "formations": [
+        {
+          "name": "Donggo",
+          "name_ko": "동고",
+          "prev": "Gohan",
+          "next": null,
+          "age": { "period": "Triassic", "epoch": "Lower Triassic–Middle Triassic", "stage": ["Olenekian", "Anisian"] }
+        },
+        {
+          "name": "Gohan",
+          "name_ko": "고한",
+          "prev": "Dosagok",
+          "next": "Donggo",
+          "age": { "period": "Permian", "epoch": "Guadalupian", "stage": "Capitanian" }
+        },
+        {
+          "name": "Dosagok",
+          "name_ko": "도사곡",
+          "prev": "Hambaeksan",
+          "next": "Gohan",
+          "age": { "period": "Permian", "epoch": "Guadalupian", "stage": "Wordian" }
+        },
+        {
+          "name": "Hambaeksan",
+          "name_ko": "함백산",
+          "prev": "Jangseong",
+          "next": "Dosagok",
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Kungurian" }
+        },
+        {
+          "name": "Jangseong",
+          "name_ko": "장성",
+          "prev": "Geumcheon",
+          "next": "Hambaeksan",
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Artinskian" }
+        },
+        {
+          "name": "Geumcheon",
+          "name_ko": "금천",
+          "prev": "Manhang",
+          "next": "Jangseong",
+          "age": { "period": "Carboniferous", "epoch": "Middle Pennsylvanian–Upper Pennsylvanian", "stage": ["Moscovian", "Kasimovian"] }
+        },
+        {
+          "name": "Manhang",
+          "name_ko": "만항",
+          "prev": null,
+          "next": "Geumcheon",
+          "age": { "period": "Carboniferous", "epoch": "Lower Pennsylvanian–Middle Pennsylvanian", "stage": ["Bashkirian", "Moscovian"] }
+        }
+      ]
+    },
+    {
+      "name": "Gangreung coalfield",
+      "name_ko": "강릉탄전",
+      "formations": [
+        {
+          "name": "Unbyeolri",
+          "name_ko": "운별리",
+          "prev": "Mangdeoksan",
+          "next": null,
+          "age": { "period": "Permian", "epoch": "Guadalupian", "stage": "Capitanian" }
+        },
+        {
+          "name": "Mangdeoksan",
+          "name_ko": "망덕산",
+          "prev": "Hambaeksan",
+          "next": "Unbyeolri",
+          "age": { "period": "Permian", "epoch": "Guadalupian", "stage": "Wordian" }
+        },
+        {
+          "name": "Hambaeksan",
+          "name_ko": "함백산",
+          "prev": "Jangseong",
+          "next": "Mangdeoksan",
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Kungurian" }
+        },
+        {
+          "name": "Jangseong",
+          "name_ko": "장성",
+          "prev": "Geumcheon",
+          "next": "Hambaeksan",
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Artinskian" }
+        },
+        {
+          "name": "Geumcheon",
+          "name_ko": "금천",
+          "prev": "Manhang",
+          "next": "Jangseong",
+          "age": { "period": "Carboniferous", "epoch": "Middle Pennsylvanian–Upper Pennsylvanian", "stage": ["Moscovian", "Kasimovian"] }
+        },
+        {
+          "name": "Manhang",
+          "name_ko": "만항",
+          "prev": null,
+          "next": "Geumcheon",
+          "age": { "period": "Carboniferous", "epoch": "Middle Pennsylvanian", "stage": "Moscovian" }
+        }
+      ]
+    },
+    {
+      "name": "Jeongseon-Pyeongchang coalfield",
+      "name_ko": "정선-평창탄전",
+      "formations": [
+        {
+          "name": "Bakjisan",
+          "name_ko": "박지산",
+          "prev": "Sangwonsan",
+          "next": null,
+          "age": { "period": "Triassic", "epoch": "Middle Triassic", "stage": "Anisian" }
+        },
+        {
+          "name": "Sangwonsan",
+          "name_ko": "상원산",
+          "prev": "Okgapsan",
+          "next": "Bakjisan",
+          "age": { "period": "Triassic", "epoch": "Lower Triassic", "stage": "Olenekian" }
+        },
+        {
+          "name": "Okgapsan",
+          "name_ko": "옥갑산",
+          "prev": "Jangseong",
+          "next": "Sangwonsan",
+          "age": { "period": "Permian", "epoch": "Guadalupian", "stage": ["Roadian", "Wordian"] }
+        },
+        {
+          "name": "Jangseong",
+          "name_ko": "장성",
+          "prev": "Bamchi",
+          "next": "Okgapsan",
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Artinskian" }
+        },
+        {
+          "name": "Bamchi",
+          "name_ko": "밤치",
+          "prev": "Geumcheon",
+          "next": "Jangseong",
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Sakmarian" }
+        },
+        {
+          "name": "Geumcheon",
+          "name_ko": "금천",
+          "prev": "Manhang",
+          "next": "Bamchi",
+          "age": { "period": "Carboniferous", "epoch": "Middle Pennsylvanian–Upper Pennsylvanian", "stage": ["Moscovian", "Kasimovian"] }
+        },
+        {
+          "name": "Manhang",
+          "name_ko": "만항",
+          "prev": null,
+          "next": "Geumcheon",
+          "age": { "period": "Carboniferous", "epoch": "Lower Pennsylvanian–Middle Pennsylvanian", "stage": ["Bashkirian", "Moscovian"] }
+        }
+      ]
+    },
+    {
+      "name": "Yeongweol coalfield",
+      "name_ko": "영월탄전",
+      "formations": [
+        {
+          "name": "Bamchi",
+          "name_ko": "밤치",
+          "prev": "Pangyo",
+          "next": null,
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Sakmarian" }
+        },
+        {
+          "name": "Pangyo",
+          "name_ko": "판교",
+          "prev": null,
+          "next": "Bamchi",
+          "age": { "period": "Carboniferous", "epoch": "Middle Pennsylvanian", "stage": "Moscovian" }
+        }
+      ]
+    },
+    {
+      "name": "Jecheon area",
+      "name_ko": "제천지역",
+      "formations": [
+        {
+          "name": "Mitan",
+          "name_ko": "미탄",
+          "prev": null,
+          "next": null,
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Artinskian" }
+        }
+      ]
+    },
+    {
+      "name": "Danyang coalfield",
+      "name_ko": "단양탄전",
+      "formations": [
+        {
+          "name": "Donggo",
+          "name_ko": "동고",
+          "prev": "Gohan",
+          "next": null,
+          "age": { "period": "Triassic", "epoch": "Lower Triassic–Middle Triassic", "stage": ["Olenekian", "Anisian"] }
+        },
+        {
+          "name": "Gohan",
+          "name_ko": "고한",
+          "prev": "Dosagok",
+          "next": "Donggo",
+          "age": { "period": "Permian", "epoch": "Guadalupian", "stage": "Capitanian" }
+        },
+        {
+          "name": "Dosagok",
+          "name_ko": "도사곡",
+          "prev": "Hambaeksan",
+          "next": "Gohan",
+          "note": "Typo 'Gormation' in original table",
+          "age": { "period": "Permian", "epoch": "Guadalupian", "stage": "Wordian" }
+        },
+        {
+          "name": "Hambaeksan",
+          "name_ko": "함백산",
+          "prev": "Jangseong",
+          "next": "Dosagok",
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Kungurian" }
+        },
+        {
+          "name": "Jangseong",
+          "name_ko": "장성",
+          "prev": "Geumcheon",
+          "next": "Hambaeksan",
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Artinskian" }
+        },
+        {
+          "name": "Geumcheon",
+          "name_ko": "금천",
+          "prev": "Manhang",
+          "next": "Jangseong",
+          "age": { "period": "Carboniferous", "epoch": "Middle Pennsylvanian", "stage": "Moscovian" }
+        },
+        {
+          "name": "Manhang",
+          "name_ko": "만항",
+          "prev": null,
+          "next": "Geumcheon",
+          "age": { "period": "Carboniferous", "epoch": "Lower Pennsylvanian–Middle Pennsylvanian", "stage": ["Bashkirian", "Moscovian"] }
+        }
+      ]
+    },
+    {
+      "name": "Mungyeong coalfield",
+      "name_ko": "문경탄전",
+      "formations": [
+        {
+          "name": "Gohan",
+          "name_ko": "고한",
+          "prev": "Dosagok",
+          "next": null,
+          "age": { "period": "Permian", "epoch": "Guadalupian", "stage": "Capitanian" }
+        },
+        {
+          "name": "Dosagok",
+          "name_ko": "도사곡",
+          "prev": "Hambaeksan",
+          "next": "Gohan",
+          "age": { "period": "Permian", "epoch": "Guadalupian", "stage": "Wordian" }
+        },
+        {
+          "name": "Hambaeksan",
+          "name_ko": "함백산",
+          "prev": "Jangseong",
+          "next": "Dosagok",
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Kungurian" }
+        },
+        {
+          "name": "Jangseong",
+          "name_ko": "장성",
+          "prev": "Bamchi",
+          "next": "Hambaeksan",
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Artinskian" }
+        },
+        {
+          "name": "Bamchi",
+          "name_ko": "밤치",
+          "prev": "Geumcheon",
+          "next": "Jangseong",
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Sakmarian" }
+        },
+        {
+          "name": "Geumcheon",
+          "name_ko": "금천",
+          "prev": "Manhang",
+          "next": "Bamchi",
+          "age": { "period": "Carboniferous", "epoch": "Middle Pennsylvanian", "stage": "Moscovian" }
+        },
+        {
+          "name": "Manhang",
+          "name_ko": "만항",
+          "prev": null,
+          "next": "Geumcheon",
+          "age": { "period": "Carboniferous", "epoch": "Middle Pennsylvanian", "stage": "Moscovian" }
+        }
+      ]
+    },
+    {
+      "name": "Boeun coalfield",
+      "name_ko": "보은탄전",
+      "formations": [
+        {
+          "name": "Hambaeksan",
+          "name_ko": "함백산",
+          "prev": "Jangseong",
+          "next": null,
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Kungurian" }
+        },
+        {
+          "name": "Jangseong",
+          "name_ko": "장성",
+          "prev": "Bamchi",
+          "next": "Hambaeksan",
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Artinskian" }
+        },
+        {
+          "name": "Bamchi",
+          "name_ko": "밤치",
+          "prev": "Geumcheon",
+          "next": "Jangseong",
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Sakmarian" }
+        },
+        {
+          "name": "Geumcheon",
+          "name_ko": "금천",
+          "prev": "Manhang",
+          "next": "Bamchi",
+          "age": { "period": "Carboniferous", "epoch": "Middle Pennsylvanian", "stage": "Moscovian" }
+        },
+        {
+          "name": "Manhang",
+          "name_ko": "만항",
+          "prev": null,
+          "next": "Geumcheon",
+          "age": { "period": "Carboniferous", "epoch": "Middle Pennsylvanian", "stage": "Moscovian" }
+        }
+      ]
+    },
+    {
+      "name": "Western Boeun area",
+      "name_ko": "보은서부지역",
+      "formations": [
+        {
+          "name": "Bibong",
+          "name_ko": "비봉",
+          "prev": "C",
+          "next": null,
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Artinskian" }
+        },
+        {
+          "name": "C",
+          "name_ko": "C",
+          "prev": "B",
+          "next": "Bibong",
+          "age": { "period": "Carboniferous", "epoch": "Middle Pennsylvanian", "stage": "Moscovian" }
+        },
+        {
+          "name": "B",
+          "name_ko": "B",
+          "prev": "Manhang",
+          "next": "C",
+          "age": { "period": "Carboniferous", "epoch": "Middle Pennsylvanian", "stage": "Moscovian" }
+        },
+        {
+          "name": "Manhang",
+          "name_ko": "만항",
+          "prev": null,
+          "next": "B",
+          "age": { "period": "Carboniferous", "epoch": "Lower Pennsylvanian–Middle Pennsylvanian", "stage": ["Bashkirian", "Moscovian"] }
+        }
+      ]
+    },
+    {
+      "name": "Wanju-Geumsan area",
+      "name_ko": "완주-금산지역",
+      "formations": [
+        {
+          "name": "E",
+          "name_ko": "E",
+          "prev": "Bibong",
+          "next": null,
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Kungurian" }
+        },
+        {
+          "name": "Bibong",
+          "name_ko": "비봉",
+          "prev": "C",
+          "next": "E",
+          "note": "Typo 'Formaiton' in original table",
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Artinskian" }
+        },
+        {
+          "name": "C",
+          "name_ko": "C",
+          "prev": "B",
+          "next": "Bibong",
+          "age": { "period": "Carboniferous", "epoch": "Middle Pennsylvanian", "stage": "Moscovian" }
+        },
+        {
+          "name": "B",
+          "name_ko": "B",
+          "prev": "Yobong",
+          "next": "C",
+          "age": { "period": "Carboniferous", "epoch": "Middle Pennsylvanian", "stage": "Moscovian" }
+        },
+        {
+          "name": "Yobong",
+          "name_ko": "요봉",
+          "prev": null,
+          "next": "B",
+          "age": { "period": "Carboniferous", "epoch": "Lower Pennsylvanian–Middle Pennsylvanian", "stage": ["Bashkirian", "Moscovian"] }
+        }
+      ]
+    },
+    {
+      "name": "Hwasun coalfield",
+      "name_ko": "화순탄전",
+      "formations": [
+        {
+          "name": "Cheonunsan",
+          "name_ko": "천운산",
+          "prev": "Hamtan",
+          "next": null,
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Kungurian" }
+        },
+        {
+          "name": "Hamtan",
+          "name_ko": "함탄",
+          "prev": "Oeumri",
+          "next": "Cheonunsan",
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Artinskian" }
+        },
+        {
+          "name": "Oeumri",
+          "name_ko": "외음리",
+          "prev": "Yongamsan",
+          "next": "Hamtan",
+          "age": { "period": "Carboniferous", "epoch": "Middle Pennsylvanian", "stage": "Moscovian" }
+        },
+        {
+          "name": "Yongamsan",
+          "name_ko": "용암산",
+          "prev": "Gapsan",
+          "next": "Oeumri",
+          "note": "Uncertain assignment indicated by (?) in original table",
+          "age": { "period": "Carboniferous", "epoch": "Middle Pennsylvanian", "stage": "Moscovian" }
+        },
+        {
+          "name": "Gapsan",
+          "name_ko": "갑산",
+          "prev": null,
+          "next": "Yongamsan",
+          "age": { "period": "Carboniferous", "epoch": "Lower Pennsylvanian–Middle Pennsylvanian", "stage": ["Bashkirian", "Moscovian"] }
+        }
+      ]
+    },
+    {
+      "name": "Boseong area",
+      "name_ko": "보성지역",
+      "formations": [
+        {
+          "name": "Songho",
+          "name_ko": "송호",
+          "prev": "Songjong",
+          "next": null,
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Kungurian" }
+        },
+        {
+          "name": "Songjong",
+          "name_ko": "송정",
+          "prev": "Geumcheon",
+          "next": "Songho",
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Artinskian" }
+        },
+        {
+          "name": "Geumcheon",
+          "name_ko": "금천",
+          "prev": "Manhang",
+          "next": "Songjong",
+          "age": { "period": "Carboniferous", "epoch": "Middle Pennsylvanian", "stage": "Moscovian" }
+        },
+        {
+          "name": "Manhang",
+          "name_ko": "만항",
+          "prev": null,
+          "next": "Geumcheon",
+          "age": { "period": "Carboniferous", "epoch": "Lower Pennsylvanian–Middle Pennsylvanian", "stage": ["Bashkirian", "Moscovian"] }
+        }
+      ]
+    },
+    {
+      "name": "Haenam-Gangjin area",
+      "name_ko": "해남-강진지역",
+      "formations": [
+        {
+          "name": "Galdu",
+          "name_ko": "갈두",
+          "prev": "Songho",
+          "next": null,
+          "age": { "period": "Permian", "epoch": "Guadalupian–Lopingian", "stage": ["Capitanian", "Wuchiapingian"] }
+        },
+        {
+          "name": "Songho",
+          "name_ko": "송호",
+          "prev": "Songjong",
+          "next": "Galdu",
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Kungurian" }
+        },
+        {
+          "name": "Songjong",
+          "name_ko": "송정",
+          "prev": "Geumcheon",
+          "next": "Songho",
+          "age": { "period": "Permian", "epoch": "Cisuralian", "stage": "Artinskian" }
+        },
+        {
+          "name": "Geumcheon",
+          "name_ko": "금천",
+          "prev": "Weolsong",
+          "next": "Songjong",
+          "age": { "period": "Carboniferous", "epoch": "Middle Pennsylvanian", "stage": "Moscovian" }
+        },
+        {
+          "name": "Weolsong",
+          "name_ko": "월송",
+          "prev": "Manhang",
+          "next": "Geumcheon",
+          "age": { "period": "Carboniferous", "epoch": "Middle Pennsylvanian", "stage": "Moscovian" }
+        },
+        {
+          "name": "Manhang",
+          "name_ko": "만항",
+          "prev": null,
+          "next": "Weolsong",
+          "age": { "period": "Carboniferous", "epoch": "Middle Pennsylvanian", "stage": "Moscovian" }
+        }
+      ]
+    }
+  ],
+
+  "correlation_notes": [
+    "Samcheok coalfield is used as the reference section",
+    "Standard sequence (Samcheok): Manhang → Geumcheon → Jangseong → Hambaeksan → Dosagok → Gohan → Donggo",
+    "Bamchi Formation appears in Jeongseon-Pyeongchang, Yeongweol, Mungyeong, and Boeun but not in Samcheok or Gangreung",
+    "Southern coalfields (Hwasun, Boseong, Haenam-Gangjin) use distinct local formation names",
+    "Western Boeun and Wanju-Geumsan areas use letter designations (B, C, E) for some formations",
+    "Donggo Formation extends into Triassic (only in Samcheok and Danyang)",
+    "Bakjisan and Sangwonsan formations are Triassic units unique to Jeongseon-Pyeongchang"
+  ],
+
+  "cross_coalfield_correlations": [
+    {
+      "standard_name": "Manhang",
+      "occurrences": ["Samcheok", "Gangreung", "Jeongseon-Pyeongchang", "Danyang", "Mungyeong", "Boeun", "Western Boeun", "Boseong", "Haenam-Gangjin"],
+      "age": "Bashkirian–Moscovian"
+    },
+    {
+      "standard_name": "Geumcheon",
+      "occurrences": ["Samcheok", "Gangreung", "Jeongseon-Pyeongchang", "Danyang", "Mungyeong", "Boeun", "Boseong", "Haenam-Gangjin"],
+      "age": "Moscovian"
+    },
+    {
+      "standard_name": "Jangseong",
+      "occurrences": ["Samcheok", "Gangreung", "Jeongseon-Pyeongchang", "Danyang", "Mungyeong", "Boeun"],
+      "correlatives": {
+        "Western Boeun": "Bibong",
+        "Wanju-Geumsan": "Bibong",
+        "Hwasun": "Hamtan",
+        "Boseong": "Songjong",
+        "Haenam-Gangjin": "Songjong"
+      },
+      "age": "Artinskian"
+    },
+    {
+      "standard_name": "Hambaeksan",
+      "occurrences": ["Samcheok", "Gangreung", "Danyang", "Mungyeong", "Boeun"],
+      "correlatives": {
+        "Wanju-Geumsan": "E",
+        "Hwasun": "Cheonunsan",
+        "Boseong": "Songho",
+        "Haenam-Gangjin": "Songho"
+      },
+      "age": "Kungurian"
+    },
+    {
+      "standard_name": "Dosagok",
+      "occurrences": ["Samcheok", "Danyang", "Mungyeong"],
+      "age": "Wordian"
+    },
+    {
+      "standard_name": "Gohan",
+      "occurrences": ["Samcheok", "Danyang", "Mungyeong"],
+      "age": "Capitanian"
+    },
+    {
+      "standard_name": "Donggo",
+      "occurrences": ["Samcheok", "Danyang"],
+      "age": "Olenekian–Anisian (Triassic)"
+    }
+  ]
+}

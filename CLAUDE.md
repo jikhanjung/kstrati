@@ -4,7 +4,10 @@ Korean stratigraphic and biozone data, packaged as a SCODA (Self-Contained Data 
 
 ## Project Purpose
 
-Organize Korean sedimentary basin stratigraphy (formations, biozones, age correlations) into a structured, queryable dataset. The primary focus is the Taebaeksan Basin (Taebaek Group + Yeongwol Group), covering Cambrian through Ordovician.
+Organize Korean sedimentary basin stratigraphy (formations, biozones, age correlations) into a structured, queryable dataset. Currently covers two supergroups:
+
+- **Joseon Supergroup** (조선누층군): Taebaeksan Basin (Taebaek Group + Yeongwol Group), Cambrian–Ordovician. Source: Choi (2011), provenance_id=1
+- **Pyeongan Supergroup** (평안누층군): 13 coalfields across southern Korea, Carboniferous–Triassic. Source: Kim & Lee (2017), provenance_id=2
 
 ## SCODA Overview
 
@@ -42,10 +45,11 @@ kstrati.scoda
 
 ### Core Entities
 
-**Group → Formation** (strict hierarchy via parent_id):
-- Group: Taebaek Group (태백층군), Yeongwol Group (영월층군)
-- Formation: Jangsan, Myobong, Daegi, Sesong, Hwajeol, Dongjeom, Dumugol, Makgol, Jigunsan, Duwibong (Taebaek); Sambangsan, Machari, Wagok, Mungok, Yeongheung (Yeongwol)
-- Formations have prev/next links (older/younger) within their Group
+**Supergroup → Group/Coalfield → Formation** (hierarchy via strat_edge_cache):
+- Joseon: Group (Taebaek, Yeongwol) → Formations (15 total)
+- Pyeongan: Coalfield (13 areas) → Formations (66 total, same name may appear in multiple coalfields as separate entries)
+- Formations have prev/next links (older/younger) within their parent unit
+- strat_units.rank: `"supergroup"`, `"group"`, `"coalfield"`, or `"formation"`
 
 **Biozone** (independent entity, associated with formations):
 - NOT a child of Formation — biozones are independent temporal markers
@@ -63,26 +67,30 @@ kstrati.scoda
 
 | Table | Rows | Purpose |
 |-------|------|---------|
-| `strat_units` | 17 | Group(2) + Formation(15), parent_id hierarchy, prev/next/sort_order |
+| `strat_units` | 98 | Supergroup(2) + Group(2) + Coalfield(13) + Formation(81) |
+| `strat_edge_cache` | 98 | Provenance-dependent hierarchy (parent, prev/next, sort_order) |
 | `biozones` | 39 | Independent temporal markers, prev/next chain per group |
 | `biozone_occurrences` | 40 | Many-to-many Formation-Biozone association |
-| `age_assignments` | 25 | ICS stage mapping with original terms |
-| `correlation_chart` | 28 | Pre-computed correlation chart rows with rowspan values |
+| `age_assignments` | 105 | ICS stage mapping with original terms |
+| `correlation_chart` | 28 | Pre-computed Joseon correlation chart rows with rowspan values |
+| `pyeongan_correlation` | 18 | Pre-computed Pyeongan correlation chart (13 coalfield columns) |
 
-`strat_units` includes a `sort_order` column for tree view ordering (hierarchy_options: `sort_by: "order_key"`, `order_key: "sort_order"`).
+`strat_edge_cache` uses `(provenance_id, child_id)` as primary key — same formation can appear under different parents in different provenances.
 
 ## Source Data
 
-- `data/taebaeksan_basin.json` — Group/Formation hierarchy + Biozone definitions with occurrences
-- `data/correlation_chart.json` — Correlation chart row layout (period, stage, formations, biozones per row)
+- `data/joseon_supergroup.json` — Joseon: Group/Formation hierarchy + Biozone definitions with occurrences
+- `data/pyeongan_supergroup.json` — Pyeongan: 13 coalfields with formations and age assignments
+- `data/correlation_chart.json` — Joseon correlation chart row layout (period, stage, formations, biozones per row)
 
 ## Build Pipeline
 
 ```
-data/taebaeksan_basin.json ──→ scripts/create_database.py ──→ kstrati.db (data tables)
-data/correlation_chart.json ─→ scripts/build_correlation.py ─→ kstrati.db (+ correlation_chart)
-                                scripts/add_scoda_tables.py ──→ kstrati.db (+ SCODA metadata)
-                                scripts/create_scoda.py ──────→ kstrati.scoda (ZIP package)
+data/joseon_supergroup.json ───→ scripts/create_database.py ──→ kstrati.db (Joseon data)
+data/pyeongan_supergroup.json ─→ scripts/create_database.py ──→ kstrati.db (+ Pyeongan data)
+data/correlation_chart.json ───→ scripts/build_correlation.py ─→ kstrati.db (+ both correlation charts)
+                                 scripts/add_scoda_tables.py ──→ kstrati.db (+ SCODA metadata)
+                                 scripts/create_scoda.py ──────→ kstrati.scoda (ZIP package)
 ```
 
 To rebuild everything:
@@ -98,7 +106,7 @@ python scripts/create_scoda.py
 | View | Type | Description |
 |------|------|-------------|
 | `strat_tree` | hierarchy/tree | Group→Formation 트리, leaf에서 biozone 목록 |
-| `correlation_chart` | hierarchy/correlation | 양쪽 Group 나란히 correlation table (scoda-engine 확장) |
+| `correlation_chart` | hierarchy/correlation | Provenance별 variant 전환 (Joseon: 2 group + biozone, Pyeongan: 13 coalfield) |
 | `formations_table` | table | 전체 Formation 목록 |
 | `biozones_table` | table | 전체 Biozone 목록 |
 | `formation_detail` | detail | Formation 상세 + ages/biozones sub-query |
@@ -106,6 +114,7 @@ python scripts/create_scoda.py
 
 ### Correlation Chart (scoda-engine 확장)
 - `display: "correlation"` — pre-computed rowspan 기반 테이블 렌더링 (renderCorrelationView in app.js)
+- `variant_key` + `variants`: provenance_id에 따라 source_query와 correlation_display를 자동 전환 (resolveViewVariant)
 - `border_follow`: biozone 셀 top border를 formation rowspan에 연동
 - `border_bottom_values`: 특정 biozone 아래에만 border 표시
 
@@ -115,4 +124,5 @@ python scripts/create_scoda.py
 - Age data always records both ICS standard terms and original publication terms when they differ
 - Biozone prev/next follows temporal order: prev = older, next = younger
 - Formation prev/next follows the same convention within a Group
-- Correlation chart layout is manually curated in `data/correlation_chart.json`
+- Joseon correlation chart layout is manually curated in `data/correlation_chart.json`
+- Pyeongan correlation chart is auto-generated from `pyeongan_supergroup.json` stage assignments

@@ -87,7 +87,7 @@ def normalize_list(val):
 
 
 def seed_provenance(conn: sqlite3.Connection):
-    """Insert the primary provenance record so FK references work."""
+    """Insert provenance records so FK references work."""
     conn.execute(
         "INSERT OR IGNORE INTO provenance (id, source_type, short_name, citation, description, year) VALUES (?,?,?,?,?,?)",
         (1, "primary", "Choi (2011)",
@@ -95,6 +95,15 @@ def seed_provenance(conn: sqlite3.Connection):
          "Journal of the Paleontological Society of Korea, 27(1), 1–11.",
          "태백산분지의 전기 고생대 고지리, 고환경에 관한 새로운 견해",
          2011),
+    )
+    conn.execute(
+        "INSERT OR IGNORE INTO provenance (id, source_type, short_name, citation, description, year) VALUES (?,?,?,?,?,?)",
+        (2, "primary", "Kim & Lee (2017)",
+         "Kim, M.G., and Lee, Y.I., 2017, The stratigraphy and correlation of the upper Paleozoic "
+         "Pyeongan Supergroup of southern Korean Peninsula - A review: Journal of the Geological "
+         "Society of Korea, v. 53, p. 321–338.",
+         "남한에 분포하는 상부고생대 평안누층군의 층서 및 대비 - 총설",
+         2017),
     )
     conn.commit()
 
@@ -224,6 +233,80 @@ def load_data(conn: sqlite3.Connection, source: dict):
     conn.commit()
 
 
+def load_pyeongan_data(conn: sqlite3.Connection, source: dict):
+    """Load Pyeongan Supergroup data (coalfield-based hierarchy, no biozones)."""
+    cur = conn.cursor()
+    PROV_ID = 2  # Pyeongan correlation
+
+    # --- Insert supergroup ---
+    sg = source["supergroup"]
+    cur.execute(
+        "INSERT INTO strat_units (name, name_ko, rank) VALUES (?,?,?)",
+        (sg["name"], sg["name_ko"], "supergroup"),
+    )
+    sg_id = cur.lastrowid
+
+    cur.execute(
+        "INSERT INTO strat_edge_cache (provenance_id, child_id, parent_id, prev_id, next_id, sort_order) VALUES (?,?,?,?,?,?)",
+        (PROV_ID, sg_id, None, None, None, 0),
+    )
+
+    # --- Insert coalfields and their formations ---
+    for ci, coalfield in enumerate(source["coalfields"]):
+        # Insert coalfield as a strat_unit
+        cur.execute(
+            "INSERT INTO strat_units (name, name_ko, rank) VALUES (?,?,?)",
+            (coalfield["name"], coalfield["name_ko"], "coalfield"),
+        )
+        cf_id = cur.lastrowid
+
+        cur.execute(
+            "INSERT INTO strat_edge_cache (provenance_id, child_id, parent_id, prev_id, next_id, sort_order) VALUES (?,?,?,?,?,?)",
+            (PROV_ID, cf_id, sg_id, None, None, ci),
+        )
+
+        # Insert formations for this coalfield
+        # Use scoped lookup: key = (coalfield_index, fm_name)
+        fm_ids = {}  # fm_name -> id within this coalfield
+        for fi, fm in enumerate(coalfield["formations"]):
+            cur.execute(
+                "INSERT INTO strat_units (name, name_ko, rank) VALUES (?,?,?)",
+                (fm["name"], fm["name_ko"], "formation"),
+            )
+            fm_id = cur.lastrowid
+            fm_ids[fm["name"]] = fm_id
+
+        # Second pass: resolve prev/next and insert edge_cache + age_assignments
+        for fi, fm in enumerate(coalfield["formations"]):
+            fm_id = fm_ids[fm["name"]]
+            prev_id = fm_ids.get(fm.get("prev"))
+            next_id = fm_ids.get(fm.get("next"))
+            cur.execute(
+                "INSERT INTO strat_edge_cache (provenance_id, child_id, parent_id, prev_id, next_id, sort_order) VALUES (?,?,?,?,?,?)",
+                (PROV_ID, fm_id, cf_id, prev_id, next_id, fi),
+            )
+
+            # Age assignments
+            age = fm["age"]
+            stages = normalize_list(age.get("stage"))
+            epoch = age.get("epoch", "")
+            period = age.get("period", "")
+
+            if stages:
+                for stage in stages:
+                    cur.execute(
+                        "INSERT INTO age_assignments (entity_type, entity_id, ics_series, ics_stage, stage_original, provenance_id, basis) VALUES (?,?,?,?,?,?,?)",
+                        ("formation", fm_id, epoch, stage, None, PROV_ID, "chart_inferred"),
+                    )
+            else:
+                cur.execute(
+                    "INSERT INTO age_assignments (entity_type, entity_id, ics_series, ics_stage, stage_original, provenance_id, basis) VALUES (?,?,?,?,?,?,?)",
+                    ("formation", fm_id, epoch, None, None, PROV_ID, "chart_inferred"),
+                )
+
+    conn.commit()
+
+
 def print_summary(conn: sqlite3.Connection):
     cur = conn.cursor()
     tables = ["strat_units", "strat_edge_cache", "biozones", "biozone_occurrences", "age_assignments"]
@@ -269,8 +352,11 @@ def main():
     if DB_PATH.exists():
         DB_PATH.unlink()
 
-    with open(DATA_DIR / "taebaeksan_basin.json", encoding="utf-8") as f:
-        source = json.load(f)
+    with open(DATA_DIR / "joseon_supergroup.json", encoding="utf-8") as f:
+        joseon = json.load(f)
+
+    with open(DATA_DIR / "pyeongan_supergroup.json", encoding="utf-8") as f:
+        pyeongan = json.load(f)
 
     conn = sqlite3.connect(str(DB_PATH))
     conn.execute("PRAGMA journal_mode=WAL")
@@ -278,7 +364,8 @@ def main():
 
     create_tables(conn)
     seed_provenance(conn)
-    load_data(conn, source)
+    load_data(conn, joseon)
+    load_pyeongan_data(conn, pyeongan)
     print_summary(conn)
 
     conn.close()
