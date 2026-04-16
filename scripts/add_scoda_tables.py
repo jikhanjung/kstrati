@@ -8,9 +8,10 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+DATA_DIR = ROOT / "data"
 DB_PATH = ROOT / "kstrati.db"
 
-ASSERTION_VERSION = "0.1.2"
+VERSION = "0.2.0"
 
 NOW = datetime.now(timezone.utc).isoformat()
 TODAY = str(date.today())
@@ -420,9 +421,32 @@ def populate_queries(conn):
 #  4. UI Manifest
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+def load_supergroup_map():
+    with open(DATA_DIR / "kstrati_map.json", encoding="utf-8") as f:
+        return json.load(f)
+
+SUPERGROUP_MAP = load_supergroup_map()
+
 MANIFEST = {
-    "default_view": "strat_tree",
+    "default_view": "correlation_chart",
+    "supergroup_map": SUPERGROUP_MAP,
+    "rank_display": {
+        "supergroup": {"abbr": "Sgp.", "label": "Supergroup"},
+        "group": {"abbr": "Gp.", "label": "Group"},
+        "coalfield": {"abbr": "", "label": "Coalfield"},
+        "formation": {"abbr": "Fm.", "label": "Formation"},
+        "member": {"abbr": "Mb.", "label": "Member"},
+    },
     "global_controls": [
+        {
+            "type": "select",
+            "param": "supergroup_id",
+            "label": "Supergroup",
+            "source": "supergroup_map",
+            "value_key": "id",
+            "label_key": "name_ko",
+            "default": "joseon",
+        },
         {
             "type": "select",
             "param": "provenance_id",
@@ -431,15 +455,24 @@ MANIFEST = {
             "value_key": "id",
             "label_key": "short_name",
             "default": 1,
+            "depends_on": "supergroup_id",
         },
     ],
     "views": {
+        # ── Map selector (landing page) ──
+        "map_selector": {
+            "type": "hierarchy",
+            "display": "map_selector",
+            "title": "Overview",
+            "description": "Korean stratigraphic supergroups",
+            "icon": "bi-geo-alt",
+        },
         # ── Stratigraphy tree ──
         "strat_tree": {
             "type": "hierarchy",
             "display": "tree",
             "title": "Stratigraphy",
-            "description": "Group-Formation hierarchy of the Taebaeksan Basin",
+            "description": "Supergroup-Formation hierarchy",
             "source_query": "strat_tree",
             "icon": "bi-layers",
             "hierarchy_options": {
@@ -478,10 +511,10 @@ MANIFEST = {
             "title": "Correlation Chart",
             "description": "Chronostratigraphic–lithostratigraphic correlation",
             "icon": "bi-layout-three-columns",
-            "variant_key": "provenance_id",
-            "default_variant": "1",
+            "variant_key": "supergroup_id",
+            "default_variant": "joseon",
             "variants": {
-                "1": {
+                "joseon": {
                     "description": "Joseon Supergroup — Taebaek and Yeongwol groups (Cambrian–Ordovician)",
                     "source_query": "correlation_chart",
                     "correlation_display": {
@@ -493,14 +526,14 @@ MANIFEST = {
                         "columns": [
                             {"key": "period", "label": "", "rowspan_key": "period_rowspan", "css_class": "corr-period"},
                             {"key": "stage", "label": "Stage", "rowspan_key": "stage_rowspan", "css_class": "corr-stage"},
-                            {"key": "taebaek_fm", "label": "Formation", "rowspan_key": "taebaek_fm_rowspan", "css_class": "corr-fm"},
+                            {"key": "taebaek_fm", "label": "Formation", "rowspan_key": "taebaek_fm_rowspan", "css_class": "corr-fm", "suffix": " Fm."},
                             {"key": "taebaek_bz", "label": "Biozone", "css_class": "corr-bz", "italic": True, "border_follow": "taebaek_fm_rowspan", "border_bottom_values": ["Fenghuangella"]},
-                            {"key": "yeongwol_fm", "label": "Formation", "rowspan_key": "yeongwol_fm_rowspan", "css_class": "corr-fm"},
+                            {"key": "yeongwol_fm", "label": "Formation", "rowspan_key": "yeongwol_fm_rowspan", "css_class": "corr-fm", "suffix": " Fm."},
                             {"key": "yeongwol_bz", "label": "Biozone", "css_class": "corr-bz", "italic": True, "border_follow": "yeongwol_fm_rowspan", "border_bottom_values": ["Glyptagnostus reticulatus"]},
                         ],
                     },
                 },
-                "2": {
+                "pyeongan": {
                     "description": "Pyeongan Supergroup — coalfield correlation (Carboniferous–Triassic)",
                     "source_query": "pyeongan_correlation_chart",
                     "correlation_display": {
@@ -524,19 +557,19 @@ MANIFEST = {
                             {"key": "period", "label": "", "rowspan_key": "period_rowspan", "css_class": "corr-period"},
                             {"key": "epoch", "label": "Epoch", "rowspan_key": "epoch_rowspan", "css_class": "corr-stage"},
                             {"key": "stage", "label": "Stage", "rowspan_key": "stage_rowspan", "css_class": "corr-stage"},
-                            {"key": "samcheok_fm", "label": "Formation", "rowspan_key": "samcheok_fm_rowspan", "css_class": "corr-fm"},
-                            {"key": "gangreung_fm", "label": "Formation", "rowspan_key": "gangreung_fm_rowspan", "css_class": "corr-fm"},
-                            {"key": "jeongseon_fm", "label": "Formation", "rowspan_key": "jeongseon_fm_rowspan", "css_class": "corr-fm"},
-                            {"key": "yeongweol_fm", "label": "Formation", "rowspan_key": "yeongweol_fm_rowspan", "css_class": "corr-fm"},
-                            {"key": "jecheon_fm", "label": "Formation", "rowspan_key": "jecheon_fm_rowspan", "css_class": "corr-fm"},
-                            {"key": "danyang_fm", "label": "Formation", "rowspan_key": "danyang_fm_rowspan", "css_class": "corr-fm"},
-                            {"key": "mungyeong_fm", "label": "Formation", "rowspan_key": "mungyeong_fm_rowspan", "css_class": "corr-fm"},
-                            {"key": "boeun_fm", "label": "Formation", "rowspan_key": "boeun_fm_rowspan", "css_class": "corr-fm"},
-                            {"key": "western_boeun_fm", "label": "Formation", "rowspan_key": "western_boeun_fm_rowspan", "css_class": "corr-fm"},
-                            {"key": "wanju_geumsan_fm", "label": "Formation", "rowspan_key": "wanju_geumsan_fm_rowspan", "css_class": "corr-fm"},
-                            {"key": "hwasun_fm", "label": "Formation", "rowspan_key": "hwasun_fm_rowspan", "css_class": "corr-fm"},
-                            {"key": "boseong_fm", "label": "Formation", "rowspan_key": "boseong_fm_rowspan", "css_class": "corr-fm"},
-                            {"key": "haenam_gangjin_fm", "label": "Formation", "rowspan_key": "haenam_gangjin_fm_rowspan", "css_class": "corr-fm"},
+                            {"key": "samcheok_fm", "label": "Formation", "rowspan_key": "samcheok_fm_rowspan", "css_class": "corr-fm", "suffix": " Fm."},
+                            {"key": "gangreung_fm", "label": "Formation", "rowspan_key": "gangreung_fm_rowspan", "css_class": "corr-fm", "suffix": " Fm."},
+                            {"key": "jeongseon_fm", "label": "Formation", "rowspan_key": "jeongseon_fm_rowspan", "css_class": "corr-fm", "suffix": " Fm."},
+                            {"key": "yeongweol_fm", "label": "Formation", "rowspan_key": "yeongweol_fm_rowspan", "css_class": "corr-fm", "suffix": " Fm."},
+                            {"key": "jecheon_fm", "label": "Formation", "rowspan_key": "jecheon_fm_rowspan", "css_class": "corr-fm", "suffix": " Fm."},
+                            {"key": "danyang_fm", "label": "Formation", "rowspan_key": "danyang_fm_rowspan", "css_class": "corr-fm", "suffix": " Fm."},
+                            {"key": "mungyeong_fm", "label": "Formation", "rowspan_key": "mungyeong_fm_rowspan", "css_class": "corr-fm", "suffix": " Fm."},
+                            {"key": "boeun_fm", "label": "Formation", "rowspan_key": "boeun_fm_rowspan", "css_class": "corr-fm", "suffix": " Fm."},
+                            {"key": "western_boeun_fm", "label": "Formation", "rowspan_key": "western_boeun_fm_rowspan", "css_class": "corr-fm", "suffix": " Fm."},
+                            {"key": "wanju_geumsan_fm", "label": "Formation", "rowspan_key": "wanju_geumsan_fm_rowspan", "css_class": "corr-fm", "suffix": " Fm."},
+                            {"key": "hwasun_fm", "label": "Formation", "rowspan_key": "hwasun_fm_rowspan", "css_class": "corr-fm", "suffix": " Fm."},
+                            {"key": "boseong_fm", "label": "Formation", "rowspan_key": "boseong_fm_rowspan", "css_class": "corr-fm", "suffix": " Fm."},
+                            {"key": "haenam_gangjin_fm", "label": "Formation", "rowspan_key": "haenam_gangjin_fm_rowspan", "css_class": "corr-fm", "suffix": " Fm."},
                         ],
                     },
                 },
@@ -736,8 +769,8 @@ def print_summary(conn):
 def main():
     parser = argparse.ArgumentParser(description="Add SCODA metadata to kstrati.db")
     parser.add_argument(
-        "--version", default=ASSERTION_VERSION,
-        help=f"Version string (default: {ASSERTION_VERSION})")
+        "--version", default=VERSION,
+        help=f"Version string (default: {VERSION})")
     args = parser.parse_args()
 
     conn = sqlite3.connect(str(DB_PATH))

@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "description": "Korean stratigraphic supergroup map selector data",
+
+  "map": {
+    "viewBox": "0 0 1198 1571",
+    "background_image": "/static/images/KoreanPeninsulaGeolMap.png",
+    "title": "Korean Stratigraphy",
+    "subtitle": "Select a supergroup to explore",
+    "paths": {
+      "peninsula": "M 84 18 C 104 16, 128 18, 146 26 C 158 32, 166 44, 168 60 C 170 78, 166 100, 158 120 C 150 138, 146 154, 148 170 C 150 188, 156 206, 160 226 C 162 246, 160 268, 154 292 C 148 316, 136 340, 122 358 C 108 374, 92 384, 74 388 C 60 390, 48 382, 40 366 C 32 350, 28 328, 24 304 C 20 280, 16 254, 12 228 C 8 202, 4 178, 6 156 C 8 134, 14 114, 24 98 C 32 86, 34 76, 30 64 C 26 52, 26 40, 32 30 C 40 20, 56 16, 72 16 C 76 16, 80 17, 84 18 Z M 32 64 C 28 72, 26 84, 28 96 C 30 108, 26 120, 20 134 C 16 146, 14 160, 16 174 C 18 188, 22 202, 26 216 C 30 230, 32 246, 32 262 M 148 36 C 154 48, 156 62, 156 78 C 156 94, 152 110, 146 126 C 142 138, 142 152, 144 166 C 146 182, 150 198, 152 214 C 154 232, 152 250, 148 268 C 144 286, 138 304, 130 320",
+      "jeju": "M 68 410 C 82 404, 102 404, 116 410 C 124 416, 124 424, 116 430 C 102 436, 82 436, 68 430 C 60 424, 60 416, 68 410 Z",
+      "ulleungdo": "M 190 250 C 194 248, 198 248, 200 252 C 200 256, 196 258, 192 256 C 190 254, 190 252, 190 250 Z",
+      "dokdo": "M 214 238 C 216 237, 218 238, 218 240 C 218 242, 216 243, 214 242 C 213 241, 213 239, 214 238 Z",
+      "dmz": "M 30 100 C 50 94, 80 88, 110 86 C 130 84, 148 86, 158 92"
+    }
+  },
+
+  "supergroups": [
+    {
+      "id": "joseon",
+      "name": "Joseon Supergroup",
+      "name_ko": "조선누층군",
+      "age_range": "Cambrian\u2013Ordovician",
+      "age_ma": [485, 541],
+      "marker": {"x": 830, "y": 1000, "label": "영월\u00b7태백"},
+      "color": "rgb(0,165,223)",
+      "provenance_ids": [1],
+      "default_view": "correlation_chart"
+    },
+    {
+      "id": "pyeongan",
+      "name": "Pyeongan Supergroup",
+      "name_ko": "평안누층군",
+      "age_range": "Carboniferous\u2013Triassic",
+      "age_ma": [201, 359],
+      "marker": {"x": 730, "y": 970, "label": "삼척\u00b7문경"},
+      "color": "rgb(121,189,168)",
+      "provenance_ids": [2],
+      "default_view": "correlation_chart"
+    }
+  ]
+}
