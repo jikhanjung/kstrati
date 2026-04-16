@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Add SCODA metadata tables and UI manifest to kstrati.db."""
 
+import argparse
 import json
 import sqlite3
 from datetime import date, datetime, timezone
@@ -8,6 +9,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DB_PATH = ROOT / "kstrati.db"
+
+ASSERTION_VERSION = "0.1.1"
 
 NOW = datetime.now(timezone.utc).isoformat()
 TODAY = str(date.today())
@@ -27,6 +30,7 @@ def create_scoda_tables(conn: sqlite3.Connection):
         CREATE TABLE IF NOT EXISTS provenance (
             id          INTEGER PRIMARY KEY,
             source_type TEXT NOT NULL,
+            short_name  TEXT NOT NULL,
             citation    TEXT NOT NULL,
             description TEXT,
             year        INTEGER,
@@ -71,11 +75,11 @@ def create_scoda_tables(conn: sqlite3.Connection):
 #  2. Metadata population
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-def populate_artifact_metadata(conn):
+def populate_artifact_metadata(conn, version: str):
     metadata = [
         ("artifact_id", "kstrati"),
         ("name", "KStrati"),
-        ("version", "0.1.0"),
+        ("version", version),
         ("schema_version", "1.0"),
         ("created_at", TODAY),
         ("description", "Korean stratigraphic and biozone database for the Taebaeksan Basin (Cambrian-Ordovician)"),
@@ -87,23 +91,15 @@ def populate_artifact_metadata(conn):
 
 def populate_provenance(conn):
     sources = [
-        (1, "primary",
+        (1, "primary", "Choi (2011)",
          "Choi, D.K. (2011) A new view on the early Paleozoic paleogeography and paleoenvironments of the Taebaeksan Basin, Korea. "
          "Journal of the Paleontological Society of Korea, 27(1), 1–11.",
          "태백산분지의 전기 고생대 고지리, 고환경에 관한 새로운 견해 — primary reference for litho- and biostratigraphic correlation of Taebaek and Yeongwol groups",
          2011, None),
-        (2, "reference",
-         "International Commission on Stratigraphy. International Chronostratigraphic Chart v2024/12.",
-         "ICS chronostratigraphic standard for age assignments",
-         2024, "https://stratigraphy.org/chart"),
-        (3, "build",
-         "KStrati data pipeline (2026). Scripts: create_database.py, add_scoda_tables.py",
-         "Automated build from JSON source data",
-         2026, None),
     ]
     for s in sources:
         conn.execute(
-            "INSERT OR REPLACE INTO provenance (id, source_type, citation, description, year, url) VALUES (?,?,?,?,?,?)", s)
+            "INSERT OR REPLACE INTO provenance (id, source_type, short_name, citation, description, year, url) VALUES (?,?,?,?,?,?,?)", s)
 
 
 def populate_schema_descriptions(conn):
@@ -114,14 +110,18 @@ def populate_schema_descriptions(conn):
         ("strat_units", "name", "Unit name (romanized)"),
         ("strat_units", "name_ko", "Unit name (Korean)"),
         ("strat_units", "rank", "Stratigraphic rank: 'group' or 'formation'"),
-        ("strat_units", "parent_id", "FK to parent strat_units.id (formation -> group)"),
-        ("strat_units", "sort_order", "Display order within parent group (0 = youngest/top)"),
-        ("strat_units", "prev_id", "FK to next older (lower) formation within the same group"),
-        ("strat_units", "next_id", "FK to next younger (upper) formation within the same group"),
         ("strat_units", "alt_name", "Alternative name (romanized), e.g. Myeonsan for Jangsan"),
         ("strat_units", "alt_name_ko", "Alternative name (Korean)"),
         ("strat_units", "faunal_province", "Faunal province: Hwangho (shallow) or Jiangnan (deep-water)"),
         ("strat_units", "facies", "Depositional facies description"),
+        # -- strat_edge_cache --
+        ("strat_edge_cache", None, "Provenance-dependent stratigraphic hierarchy (parent-child, ordering, prev/next links)"),
+        ("strat_edge_cache", "provenance_id", "FK to provenance.id — which source defines this hierarchy"),
+        ("strat_edge_cache", "child_id", "FK to strat_units.id — the unit being placed in the hierarchy"),
+        ("strat_edge_cache", "parent_id", "FK to strat_units.id — parent unit (formation→group)"),
+        ("strat_edge_cache", "prev_id", "FK to strat_units.id — next older (lower) unit within the same parent"),
+        ("strat_edge_cache", "next_id", "FK to strat_units.id — next younger (upper) unit within the same parent"),
+        ("strat_edge_cache", "sort_order", "Display order within parent (0 = youngest/top)"),
         # -- biozones --
         ("biozones", None, "Biozones: independent temporal markers based on index fossils"),
         ("biozones", "id", "Primary key"),
@@ -170,17 +170,32 @@ def populate_display_intent(conn):
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 QUERIES = [
+    # -- Provenance selector (for global_controls dropdown) --
+    {
+        "name": "provenance_selector",
+        "description": "List provenance sources for dropdown selector",
+        "sql": """
+            SELECT id, short_name, source_type, year
+            FROM provenance
+            WHERE COALESCE(:provenance_id, 1) > 0
+            ORDER BY id
+        """,
+    },
     # -- Tree / hierarchy --
     {
         "name": "strat_tree",
         "description": "Group-Formation hierarchy for tree view",
         "sql": """
             SELECT u.id, u.name, u.name_ko, u.rank,
-                   u.parent_id, u.sort_order,
+                   e.parent_id, e.sort_order,
                    u.faunal_province, u.facies,
-                   (SELECT COUNT(*) FROM biozone_occurrences bo WHERE bo.formation_id = u.id) AS biozone_count
+                   (SELECT COUNT(*) FROM biozone_occurrences bo
+                    WHERE bo.formation_id = u.id
+                      AND bo.provenance_id = COALESCE(:provenance_id, bo.provenance_id)) AS biozone_count
             FROM strat_units u
-            ORDER BY u.sort_order
+            JOIN strat_edge_cache e ON e.child_id = u.id
+                AND e.provenance_id = COALESCE(:provenance_id, 1)
+            ORDER BY e.sort_order
         """,
     },
     # -- Formation list --
@@ -196,10 +211,13 @@ QUERIES = [
                    GROUP_CONCAT(DISTINCT a.ics_stage) AS stages,
                    GROUP_CONCAT(DISTINCT COALESCE(a.stage_original, a.ics_stage)) AS stages_original
             FROM strat_units f
-            JOIN strat_units g ON f.parent_id = g.id
-            LEFT JOIN strat_units prev ON f.prev_id = prev.id
-            LEFT JOIN strat_units nxt ON f.next_id = nxt.id
+            JOIN strat_edge_cache e ON e.child_id = f.id
+                AND e.provenance_id = COALESCE(:provenance_id, 1)
+            JOIN strat_units g ON e.parent_id = g.id
+            LEFT JOIN strat_units prev ON e.prev_id = prev.id
+            LEFT JOIN strat_units nxt ON e.next_id = nxt.id
             LEFT JOIN age_assignments a ON a.entity_type = 'formation' AND a.entity_id = f.id
+                AND a.provenance_id = COALESCE(:provenance_id, a.provenance_id)
             WHERE f.rank = 'formation'
             GROUP BY f.id
             ORDER BY g.id, f.id
@@ -220,8 +238,11 @@ QUERIES = [
             LEFT JOIN biozones prev ON b.prev_id = prev.id
             LEFT JOIN biozones nxt ON b.next_id = nxt.id
             LEFT JOIN biozone_occurrences bo ON bo.biozone_id = b.id
+                AND bo.provenance_id = COALESCE(:provenance_id, bo.provenance_id)
             LEFT JOIN strat_units u ON bo.formation_id = u.id
-            LEFT JOIN strat_units g ON u.parent_id = g.id
+            LEFT JOIN strat_edge_cache ue ON ue.child_id = u.id
+                AND ue.provenance_id = COALESCE(:provenance_id, 1)
+            LEFT JOIN strat_units g ON ue.parent_id = g.id
             GROUP BY b.id
             ORDER BY b.id
         """,
@@ -238,9 +259,11 @@ QUERIES = [
                    prev.name AS prev_formation, prev.name_ko AS prev_formation_ko,
                    nxt.name AS next_formation, nxt.name_ko AS next_formation_ko
             FROM strat_units f
-            JOIN strat_units g ON f.parent_id = g.id
-            LEFT JOIN strat_units prev ON f.prev_id = prev.id
-            LEFT JOIN strat_units nxt ON f.next_id = nxt.id
+            JOIN strat_edge_cache e ON e.child_id = f.id
+                AND e.provenance_id = COALESCE(:provenance_id, 1)
+            JOIN strat_units g ON e.parent_id = g.id
+            LEFT JOIN strat_units prev ON e.prev_id = prev.id
+            LEFT JOIN strat_units nxt ON e.next_id = nxt.id
             WHERE f.id = :id
         """,
         "params": {"id": None},
@@ -253,12 +276,16 @@ QUERIES = [
             SELECT b.id, b.name,
                    prev.name AS prev_biozone,
                    nxt.name AS next_biozone,
-                   b.note
+                   b.note,
+                   bo.basis,
+                   p.citation AS provenance
             FROM biozone_occurrences bo
             JOIN biozones b ON bo.biozone_id = b.id
             LEFT JOIN biozones prev ON b.prev_id = prev.id
             LEFT JOIN biozones nxt ON b.next_id = nxt.id
+            LEFT JOIN provenance p ON bo.provenance_id = p.id
             WHERE bo.formation_id = :formation_id
+              AND bo.provenance_id = COALESCE(:provenance_id, bo.provenance_id)
             ORDER BY b.id
         """,
         "params": {"formation_id": None},
@@ -268,9 +295,13 @@ QUERIES = [
         "name": "formation_ages",
         "description": "ICS age assignments for a specific formation",
         "sql": """
-            SELECT a.id, a.ics_series, a.ics_stage, a.stage_original, a.age_relation
+            SELECT a.id, a.ics_series, a.ics_stage, a.stage_original, a.age_relation,
+                   a.basis,
+                   p.citation AS provenance
             FROM age_assignments a
+            LEFT JOIN provenance p ON a.provenance_id = p.id
             WHERE a.entity_type = 'formation' AND a.entity_id = :id
+              AND a.provenance_id = COALESCE(:provenance_id, a.provenance_id)
             ORDER BY a.id
         """,
         "params": {"id": None},
@@ -288,6 +319,7 @@ QUERIES = [
             LEFT JOIN biozones prev ON b.prev_id = prev.id
             LEFT JOIN biozones nxt ON b.next_id = nxt.id
             WHERE b.id = :id
+              AND COALESCE(:provenance_id, 1) > 0
         """,
         "params": {"id": None},
     },
@@ -297,11 +329,17 @@ QUERIES = [
         "description": "Formations where a specific biozone occurs",
         "sql": """
             SELECT f.id, f.name, f.name_ko,
-                   g.name AS group_name, g.faunal_province
+                   g.name AS group_name, g.faunal_province,
+                   bo.basis,
+                   p.citation AS provenance
             FROM biozone_occurrences bo
             JOIN strat_units f ON bo.formation_id = f.id
-            JOIN strat_units g ON f.parent_id = g.id
+            JOIN strat_edge_cache e ON e.child_id = f.id
+                AND e.provenance_id = COALESCE(:provenance_id, 1)
+            JOIN strat_units g ON e.parent_id = g.id
+            LEFT JOIN provenance p ON bo.provenance_id = p.id
             WHERE bo.biozone_id = :biozone_id
+              AND bo.provenance_id = COALESCE(:provenance_id, bo.provenance_id)
             ORDER BY g.id, f.id
         """,
         "params": {"biozone_id": None},
@@ -316,8 +354,11 @@ QUERIES = [
                    GROUP_CONCAT(g.name, ', ') AS groups
             FROM biozones b
             JOIN biozone_occurrences bo ON bo.biozone_id = b.id
+                AND bo.provenance_id = COALESCE(:provenance_id, bo.provenance_id)
             JOIN strat_units u ON bo.formation_id = u.id
-            JOIN strat_units g ON u.parent_id = g.id
+            JOIN strat_edge_cache ue ON ue.child_id = u.id
+                AND ue.provenance_id = COALESCE(:provenance_id, 1)
+            JOIN strat_units g ON ue.parent_id = g.id
             GROUP BY b.id
             HAVING COUNT(DISTINCT g.id) > 1
         """,
@@ -333,6 +374,7 @@ QUERIES = [
                    taebaek_fm, taebaek_fm_rowspan, taebaek_bz,
                    yeongwol_fm, yeongwol_fm_rowspan, yeongwol_bz
             FROM correlation_chart
+            WHERE COALESCE(:provenance_id, 1) > 0
             ORDER BY row_num
         """,
     },
@@ -353,6 +395,17 @@ def populate_queries(conn):
 
 MANIFEST = {
     "default_view": "strat_tree",
+    "global_controls": [
+        {
+            "type": "select",
+            "param": "provenance_id",
+            "label": "Provenance",
+            "source_query": "provenance_selector",
+            "value_key": "id",
+            "label_key": "short_name",
+            "default": 1,
+        },
+    ],
     "views": {
         # ── Stratigraphy tree ──
         "strat_tree": {
@@ -607,11 +660,17 @@ def print_summary(conn):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Add SCODA metadata to kstrati.db")
+    parser.add_argument(
+        "--version", default=ASSERTION_VERSION,
+        help=f"Version string (default: {ASSERTION_VERSION})")
+    args = parser.parse_args()
+
     conn = sqlite3.connect(str(DB_PATH))
     conn.execute("PRAGMA foreign_keys=ON")
 
     create_scoda_tables(conn)
-    populate_artifact_metadata(conn)
+    populate_artifact_metadata(conn, version=args.version)
     populate_provenance(conn)
     populate_schema_descriptions(conn)
     populate_display_intent(conn)
@@ -621,7 +680,7 @@ def main():
     conn.commit()
     print_summary(conn)
     conn.close()
-    print(f"\n-> {DB_PATH}")
+    print(f"\n-> {DB_PATH}  (version {args.version})")
 
 
 if __name__ == "__main__":

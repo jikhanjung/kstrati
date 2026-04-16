@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DB_PATH = ROOT / "kstrati.db"
-OUTPUT_PATH = ROOT / "kstrati.scoda"
+DIST_DIR = ROOT / "dist"
 
 
 def sha256_file(path: Path) -> str:
@@ -67,26 +67,46 @@ def build_manifest(db_path: Path) -> dict:
     }
 
 
+def _read_version(db_path: Path) -> str:
+    conn = sqlite3.connect(str(db_path))
+    try:
+        row = conn.execute(
+            "SELECT value FROM artifact_metadata WHERE key='version'"
+        ).fetchone()
+        return row[0] if row else "0.0.0"
+    finally:
+        conn.close()
+
+
 def main():
     if not DB_PATH.exists():
         print(f"Error: {DB_PATH} not found. Run create_database.py and add_scoda_tables.py first.")
         raise SystemExit(1)
 
+    version = _read_version(DB_PATH)
+    DIST_DIR.mkdir(exist_ok=True)
+
+    scoda_path = DIST_DIR / f"kstrati-{version}.scoda"
+    manifest_path = DIST_DIR / f"kstrati-{version}.manifest.json"
     manifest = build_manifest(DB_PATH)
 
-    with zipfile.ZipFile(OUTPUT_PATH, "w", zipfile.ZIP_DEFLATED) as zf:
+    # Write .scoda (ZIP)
+    with zipfile.ZipFile(scoda_path, "w", zipfile.ZIP_DEFLATED) as zf:
         zf.writestr("manifest.json", json.dumps(manifest, indent=2, ensure_ascii=False))
         zf.write(DB_PATH, "data.db")
 
-    size = OUTPUT_PATH.stat().st_size
-    print(f"Created: {OUTPUT_PATH}")
+    # Write .manifest.json
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    size = scoda_path.stat().st_size
+    print(f"Created: {scoda_path}")
+    print(f"         {manifest_path}")
     print(f"  Size:     {size:,} bytes")
     print(f"  Name:     {manifest['name']}")
     print(f"  Version:  {manifest['version']}")
     print(f"  Records:  {manifest['record_count']}")
     print(f"  Checksum: {manifest['data_checksum_sha256'][:16]}...")
-    print(f"\nmanifest.json:")
-    print(json.dumps(manifest, indent=2, ensure_ascii=False))
 
 
 if __name__ == "__main__":

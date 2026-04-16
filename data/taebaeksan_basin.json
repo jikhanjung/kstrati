@@ -2,6 +2,11 @@
   "basin": "Taebaeksan Basin",
   "description": "Lithostratigraphic and biostratigraphic correlation between the Taebaek and Yeongwol groups",
 
+  "supergroup": {
+    "name": "Joseon Supergroup",
+    "name_ko": "조선누층군"
+  },
+
   "groups": [
     {
       "name": "Taebaek Group",

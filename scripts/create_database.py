@@ -17,17 +17,20 @@ def create_tables(conn: sqlite3.Connection):
             name      TEXT NOT NULL,
             name_ko   TEXT,
             rank      TEXT NOT NULL,   -- 'group' or 'formation'
-            parent_id INTEGER,
-            prev_id   INTEGER,
-            next_id   INTEGER,
-            sort_order  INTEGER NOT NULL DEFAULT 0,
             alt_name    TEXT,
             alt_name_ko TEXT,
             faunal_province TEXT,
-            facies    TEXT,
-            FOREIGN KEY (parent_id) REFERENCES strat_units(id),
-            FOREIGN KEY (prev_id)   REFERENCES strat_units(id),
-            FOREIGN KEY (next_id)   REFERENCES strat_units(id)
+            facies    TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS strat_edge_cache (
+            provenance_id INTEGER NOT NULL REFERENCES provenance(id),
+            child_id      INTEGER NOT NULL REFERENCES strat_units(id),
+            parent_id     INTEGER REFERENCES strat_units(id),
+            prev_id       INTEGER REFERENCES strat_units(id),
+            next_id       INTEGER REFERENCES strat_units(id),
+            sort_order    INTEGER NOT NULL DEFAULT 0,
+            PRIMARY KEY (provenance_id, child_id)
         );
 
         CREATE TABLE IF NOT EXISTS biozones (
@@ -43,6 +46,7 @@ def create_tables(conn: sqlite3.Connection):
         CREATE TABLE IF NOT EXISTS provenance (
             id          INTEGER PRIMARY KEY,
             source_type TEXT NOT NULL,
+            short_name  TEXT NOT NULL,
             citation    TEXT NOT NULL,
             description TEXT,
             year        INTEGER,
@@ -85,8 +89,8 @@ def normalize_list(val):
 def seed_provenance(conn: sqlite3.Connection):
     """Insert the primary provenance record so FK references work."""
     conn.execute(
-        "INSERT OR IGNORE INTO provenance (id, source_type, citation, description, year) VALUES (?,?,?,?,?)",
-        (1, "primary",
+        "INSERT OR IGNORE INTO provenance (id, source_type, short_name, citation, description, year) VALUES (?,?,?,?,?,?)",
+        (1, "primary", "Choi (2011)",
          "Choi, D.K. (2011) A new view on the early Paleozoic paleogeography and paleoenvironments of the Taebaeksan Basin, Korea. "
          "Journal of the Paleontological Society of Korea, 27(1), 1–11.",
          "태백산분지의 전기 고생대 고지리, 고환경에 관한 새로운 견해",
@@ -102,35 +106,57 @@ def load_data(conn: sqlite3.Connection, source: dict):
     unit_ids = {}   # "Taebaek Group" -> id, "Dumugol" -> id
     bz_ids = {}     # "Kayseraspis" -> id
 
-    # ── Pass 1: Insert groups and formations (without prev/next) ──
+    # ── Pass 1: Insert supergroup, groups, and formations (unit attributes only) ──
+    sg = source.get("supergroup")
+    if sg:
+        cur.execute(
+            "INSERT INTO strat_units (name, name_ko, rank) VALUES (?,?,?)",
+            (sg["name"], sg["name_ko"], "supergroup"),
+        )
+        unit_ids[sg["name"]] = cur.lastrowid
+
     for gi, group in enumerate(source["groups"]):
         cur.execute(
-            "INSERT INTO strat_units (name, name_ko, rank, sort_order, faunal_province, facies) VALUES (?,?,?,?,?,?)",
-            (group["name"], group["name_ko"], "group", gi,
+            "INSERT INTO strat_units (name, name_ko, rank, faunal_province, facies) VALUES (?,?,?,?,?)",
+            (group["name"], group["name_ko"], "group",
              group["faunal_province"], group["facies"]),
         )
-        group_id = cur.lastrowid
-        unit_ids[group["name"]] = group_id
+        unit_ids[group["name"]] = cur.lastrowid
 
-        # Formations are listed youngest-first in JSON;
-        # sort_order: youngest = smallest so tree renders top-down = young→old
         for fi, fm in enumerate(group["formations"]):
             cur.execute(
-                "INSERT INTO strat_units (name, name_ko, rank, parent_id, sort_order, alt_name, alt_name_ko) VALUES (?,?,?,?,?,?,?)",
-                (fm["name"], fm["name_ko"], "formation", group_id, fi,
+                "INSERT INTO strat_units (name, name_ko, rank, alt_name, alt_name_ko) VALUES (?,?,?,?,?)",
+                (fm["name"], fm["name_ko"], "formation",
                  fm.get("alt_name"), fm.get("alt_name_ko")),
             )
             unit_ids[fm["name"]] = cur.lastrowid
 
-    # ── Pass 2: Resolve prev/next for formations ──
-    for group in source["groups"]:
-        for fm in group["formations"]:
+    # ── Pass 2: Populate strat_edge_cache (provenance-dependent hierarchy) ──
+    PROV_ID = 1  # Choi (2011)
+    sg_id = unit_ids.get(sg["name"]) if sg else None
+
+    # Supergroup edge: root node
+    if sg_id:
+        cur.execute(
+            "INSERT INTO strat_edge_cache (provenance_id, child_id, parent_id, prev_id, next_id, sort_order) VALUES (?,?,?,?,?,?)",
+            (PROV_ID, sg_id, None, None, None, 0),
+        )
+
+    for gi, group in enumerate(source["groups"]):
+        group_id = unit_ids[group["name"]]
+        # Group edge: parent=supergroup (or root if no supergroup)
+        cur.execute(
+            "INSERT INTO strat_edge_cache (provenance_id, child_id, parent_id, prev_id, next_id, sort_order) VALUES (?,?,?,?,?,?)",
+            (PROV_ID, group_id, sg_id, None, None, gi),
+        )
+        # Formation edges: parent=group, with prev/next and sort_order
+        for fi, fm in enumerate(group["formations"]):
             fm_id = unit_ids[fm["name"]]
             prev_id = unit_ids.get(fm.get("prev")) if fm.get("prev") else None
             next_id = unit_ids.get(fm.get("next")) if fm.get("next") else None
             cur.execute(
-                "UPDATE strat_units SET prev_id=?, next_id=? WHERE id=?",
-                (prev_id, next_id, fm_id),
+                "INSERT INTO strat_edge_cache (provenance_id, child_id, parent_id, prev_id, next_id, sort_order) VALUES (?,?,?,?,?,?)",
+                (PROV_ID, fm_id, group_id, prev_id, next_id, fi),
             )
 
     # ── Pass 3: Insert biozones (without prev/next) ──
@@ -200,19 +226,20 @@ def load_data(conn: sqlite3.Connection, source: dict):
 
 def print_summary(conn: sqlite3.Connection):
     cur = conn.cursor()
-    tables = ["strat_units", "biozones", "biozone_occurrences", "age_assignments"]
+    tables = ["strat_units", "strat_edge_cache", "biozones", "biozone_occurrences", "age_assignments"]
     print("── Database summary ──")
     for t in tables:
         count = cur.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0]
         print(f"  {t}: {count} rows")
 
-    print("\n── Strat units ──")
+    print("\n── Strat units (provenance_id=1) ──")
     for row in cur.execute(
-        "SELECT u.id, u.name, u.rank, u.sort_order, p.name AS parent, prev.name AS prev, nxt.name AS next "
+        "SELECT u.id, u.name, u.rank, e.sort_order, p.name AS parent, prev.name AS prev, nxt.name AS next "
         "FROM strat_units u "
-        "LEFT JOIN strat_units p ON u.parent_id = p.id "
-        "LEFT JOIN strat_units prev ON u.prev_id = prev.id "
-        "LEFT JOIN strat_units nxt ON u.next_id = nxt.id "
+        "JOIN strat_edge_cache e ON e.child_id = u.id AND e.provenance_id = 1 "
+        "LEFT JOIN strat_units p ON e.parent_id = p.id "
+        "LEFT JOIN strat_units prev ON e.prev_id = prev.id "
+        "LEFT JOIN strat_units nxt ON e.next_id = nxt.id "
         "ORDER BY u.id"
     ):
         print(f"  [{row[0]:2d}] {row[2]:10s} {row[1]:20s}  order={row[3]}  parent={row[4] or '-':20s}  prev={row[5] or '-':12s}  next={row[6] or '-':12s}")

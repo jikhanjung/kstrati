@@ -1,0 +1,74 @@
+name: Manual Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_tag:
+        description: 'Version tag (e.g., v0.1.1, v0.2.0-beta.1)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Is this a pre-release?'
+        required: true
+        type: boolean
+        default: false
+      release_notes:
+        description: 'Release notes (optional)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Clone scoda-engine
+        uses: actions/checkout@v4
+        with:
+          repository: jikhanjung/scoda-engine
+          path: scoda-engine
+      - name: Install dependencies
+        run: |
+          pip install -e "./scoda-engine/core"
+          pip install -e "./scoda-engine"
+      - name: Build database
+        run: |
+          python scripts/create_database.py
+          python scripts/build_correlation.py
+          python scripts/add_scoda_tables.py
+      - name: Build .scoda package
+        run: python scripts/create_scoda.py
+      - name: List built artifacts
+        run: |
+          echo "### Built packages:" >> $GITHUB_STEP_SUMMARY
+          for f in dist/*.scoda; do
+            echo "- $(basename $f) ($(stat -c%s $f | numfmt --to=iec) bytes)" >> $GITHUB_STEP_SUMMARY
+          done
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version_tag }}
+          name: "KStrati ${{ github.event.inputs.version_tag }}"
+          body: |
+            ## KStrati ${{ github.event.inputs.version_tag }}
+
+            Built from commit: ${{ github.sha }}
+
+            ${{ github.event.inputs.release_notes }}
+
+            ### Package contents
+            - Taebaek Group (태백층군) — 10 formations, Hwangho province
+            - Yeongwol Group (영월층군) — 5 formations, Jiangnan province
+            - 39 biozones with provenance-tracked occurrences and age assignments
+            - Correlation chart with rowspan-based rendering
+          files: |
+            dist/*.scoda
+            dist/*.manifest.json
+          draft: false
+          prerelease: ${{ github.event.inputs.prerelease }}

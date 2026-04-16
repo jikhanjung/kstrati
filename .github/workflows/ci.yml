@@ -1,0 +1,43 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Clone scoda-engine
+        uses: actions/checkout@v4
+        with:
+          repository: jikhanjung/scoda-engine
+          path: scoda-engine
+      - name: Install dependencies
+        run: |
+          pip install -e "./scoda-engine/core"
+          pip install -e "./scoda-engine"
+      - name: Build database
+        run: |
+          python scripts/create_database.py
+          python scripts/build_correlation.py
+          python scripts/add_scoda_tables.py
+      - name: Build .scoda package
+        run: python scripts/create_scoda.py
+      - name: Verify package
+        run: |
+          ls -lh kstrati-*.scoda
+          python -c "
+          import zipfile, json, sys
+          with zipfile.ZipFile(list(__import__('pathlib').Path('.').glob('kstrati-*.scoda'))[0]) as zf:
+              m = json.loads(zf.read('manifest.json'))
+              print(f\"Package: {m['name']} v{m['version']}\")
+              print(f\"Records: {m['record_count']}\")
+              assert 'data.db' in zf.namelist(), 'data.db missing'
+              print('OK')
+          "
