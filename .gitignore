@@ -1,2 +1,4 @@
 kstrati_overlay.db
 dist/
+*.png
+!assets/*.png
